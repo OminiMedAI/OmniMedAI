@@ -13,7 +13,7 @@ OmniMedAI is an advanced AI-driven platform designed to integrate and analyze he
 > OmniMedAI adopts a modular architecture to support end-to-end multimodal data analysis:  
 > 
 
-![img](./platform.jpg)
+![img](./platform.jpg){ width="800" height="600" style="display: block; margin: 0 auto" }
 
 1. **Data Integration Module**  
    • Supports import of DICOM, CSV, HDF5, and other formats.  
