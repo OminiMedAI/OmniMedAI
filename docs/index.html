@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>OmniMedAI | 全能医学AI平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset & 基础 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+            color: #e0e6ed;
+            min-height: 100vh;
+        }
+        a { color: #00ffe7; text-decoration: none; }
+        h1, h2, h3 { font-weight: 700; }
+        /* 顶部导航 */
+        header {
+            background: rgba(20, 30, 48, 0.95);
+            box-shadow: 0 2px 8px #0008;
+            padding: 20px 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: #00ffe7;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffe7aa;
+        }
+        nav ul {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+        nav ul li a {
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+        nav ul li a:hover {
+            color: #fff;
+        }
+        /* 英雄区 */
+        .hero {
+            text-align: center;
+            padding: 80px 0 60px 0;
+            background: linear-gradient(120deg, #232526 0%, #414345 100%);
+            border-radius: 0 0 40px 40px;
+            box-shadow: 0 8px 32px #0006;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #00ffe7;
+            text-shadow: 0 0 20px #00ffe755;
+        }
+        .hero p {
+            font-size: 1.3rem;
+            color: #e0e6edcc;
+            margin-bottom: 30px;
+        }
+        .hero .cta {
+            display: inline-block;
+            padding: 14px 40px;
+            background: linear-gradient(90deg, #00ffe7 0%, #007cf0 100%);
+            color: #222;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            font-weight: bold;
+            box-shadow: 0 4px 24px #00ffe755;
+            transition: background 0.2s, color 0.2s;
+        }
+        .hero .cta:hover {
+            background: #fff;
+            color: #007cf0;
+        }
+        /* 功能区 */
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            margin: 60px 0;
+        }
+        .feature-card {
+            background: rgba(44, 83, 100, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 4px 24px #00ffe722;
+            padding: 36px 28px;
+            width: 320px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 8px 32px #00ffe799;
+        }
+        .feature-card h3 {
+            color: #00ffe7;
+            margin-bottom: 16px;
+        }
+        .feature-card p {
+            color: #e0e6edcc;
+            font-size: 1.05rem;
+        }
+        /* 团队区 */
+        .team {
+            margin: 60px 0 40px 0;
+            text-align: center;
+        }
+        .team h2 {
+            color: #00ffe7;
+            margin-bottom: 30px;
+        }
+        .team-members {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        .member {
+            background: rgba(44, 83, 100, 0.7);
+            border-radius: 16px;
+            padding: 24px 18px;
+            width: 180px;
+            box-shadow: 0 2px 12px #00ffe722;
+        }
+        .member img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+            border: 2px solid #00ffe7;
+        }
+        .member h4 {
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .member p {
+            color: #00ffe7cc;
+            font-size: 0.95rem;
+        }
+        /* 联系方式 */
+        .contact {
+            background: linear-gradient(90deg, #232526 0%, #414345 100%);
+            padding: 40px 0;
+            text-align: center;
+            border-radius: 30px;
+            margin-bottom: 40px;
+        }
+        .contact h2 {
+            color: #00ffe7;
+            margin-bottom: 18px;
+        }
+        .contact p {
+            color: #e0e6edcc;
+            font-size: 1.1rem;
+        }
+        /* 页脚 */
+        footer {
+            text-align: center;
+            color: #00ffe7aa;
+            padding: 18px 0;
+            font-size: 1rem;
+            background: #141e30;
+            border-radius: 20px 20px 0 0;
+            letter-spacing: 1px;
+        }
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .features { flex-direction: column; align-items: center; }
+            .team-members { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container nav">
+            <div class="logo">OmniMedAI</div>
+            <nav>
+                <ul>
+                    <li><a href="#features">功能</a></li>
+                    <li><a href="#team">团队</a></li>
+                    <li><a href="#contact">联系</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <section class="hero">
+        <h1>OmniMedAI</h1>
+        <p>全能医学AI平台，赋能医疗影像、临床数据与智能诊断，助力精准医疗新时代。</p>
+        <a class="cta" href="#features">探索功能</a>
+    </section>
+    <section class="container" id="features">
+        <div class="features">
+            <div class="feature-card">
+                <h3>多模态医学影像分析</h3>
+                <p>支持CT、MRI、超声等多种医学影像自动处理与特征提取，助力疾病精准识别。</p>
+            </div>
+            <div class="feature-card">
+                <h3>智能临床数据融合</h3>
+                <p>自动整合临床、组学、影像等多源数据，深度挖掘医学信息，提升诊断准确率。</p>
+            </div>
+            <div class="feature-card">
+                <h3>AI模型自动训练与评估</h3>
+                <p>一键式机器学习/深度学习模型训练、调参与可视化，支持多种主流算法。</p>
+            </div>
+            <div class="feature-card">
+                <h3>可视化与决策支持</h3>
+                <p>丰富的统计分析与可视化工具，辅助医生科学决策，提升临床效率。</p>
+            </div>
+        </div>
+    </section>
+    <section class="team" id="team">
+        <h2>核心团队</h2>
+        <div class="team-members">
+            <div class="member">
+                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai1" alt="AI专家">
+                <h4>朱博士</h4>
+                <p>AI算法专家</p>
+            </div>
+            <div class="member">
+                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai2" alt="医学影像">
+                <h4>谢教授</h4>
+                <p>医学影像专家</p>
+            </div>
+            <div class="member">
+                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai3" alt="数据工程">
+                <h4>孙博士</h4>
+                <p>医学影像专家</p>
+            </div>
+            <div class="member">
+                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai4" alt="产品经理">
+                <h4>赵经理</h4>
+                <p>产品经理</p>
+            </div>
+        </div>
+    </section>
+    <section class="container contact" id="contact">
+        <h2>联系我们</h2>
+        <p>邮箱：<a href="mailto:contact@omnimedai.com">contact@omnimedai.com</a></p>
+        <p>地址：上海市徐汇区枫林路</p>
+    </section>
+    <footer>
+        © 2024 OmniMedAI | 赋能医疗 · 智启未来
+    </footer>
+</body>
+</html>
