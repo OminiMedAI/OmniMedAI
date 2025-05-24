@@ -1,0 +1,157 @@
+我将为您添加GitHub和邮箱的图标链接到导航栏，使用流行的Font Awesome图标库。以下是修改后的代码：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniMedAI | AI-Powered Precision Medicine Platform</title>
+    <!-- 添加Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --radius: 0.5rem;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        header {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.5rem 0;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-left: 1rem;
+        }
+        
+        .social-links a {
+            color: var(--text-light);
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            line-height: 1.5;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        /* 其他原有样式保持不变... */
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">OmniMedAI</a>
+                <div style="display: flex; align-items: center;">
+                    <div class="nav-links">
+                        <a href="#features">Features</a>
+                        <a href="#about">About</a>
+                        <a href="#contact">Contact</a>
+                        <a href="#" class="btn">Get Started</a>
+                    </div>
+                    <div class="social-links">
+                        <a href="https://github.com/OminiMedAI/OmniMedAI" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="mailto:omnimai@foxmail.com" title="Contact Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- 其他部分保持不变... -->
+    
+    <footer>
+        <div class="container">
+            <p>© 2023 OmniMedAI Platform. All rights reserved.</p>
+            <p>Developed with ❤️ by our research team</p>
+            <div style="margin-top: 1rem;">
+                <a href="https://github.com/OminiMedAI/OmniMedAI" target="_blank" style="color: var(--text-light); margin-right: 1rem;">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <a href="mailto:omnimai@foxmail.com" style="color: var(--text-light);">
+                    <i class="fas fa-envelope"></i> omnimai@foxmail.com
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

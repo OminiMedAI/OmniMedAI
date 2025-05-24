@@ -1,258 +1,264 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OmniMedAI | 全能医学AI平台</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniMedAI | AI-Powered Precision Medicine Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Reset & 基础 */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --radius: 0.5rem;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-            background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
-            color: #e0e6ed;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--background);
         }
-        a { color: #00ffe7; text-decoration: none; }
-        h1, h2, h3 { font-weight: 700; }
-        /* 顶部导航 */
-        header {
-            background: rgba(20, 30, 48, 0.95);
-            box-shadow: 0 2px 8px #0008;
-            padding: 20px 0;
-        }
+        
         .container {
-            width: 90%;
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 1rem;
         }
-        .nav {
+        
+        header {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        nav {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
         }
+        
         .logo {
-            font-size: 2rem;
-            letter-spacing: 2px;
-            color: #00ffe7;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00ffe7aa;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
         }
-        nav ul {
+        
+        
+        .nav-links {
             display: flex;
-            gap: 30px;
-            list-style: none;
+            align-items: center;  /* 确保所有子元素垂直居中 */
+            gap: 1.5rem;
         }
-        nav ul li a {
-            font-size: 1.1rem;
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
             transition: color 0.2s;
+            padding: 0.5rem 0;    /* 增加垂直内边距 */
+            display: inline-flex;  /* 避免行高差异 */
+            align-items: center;   /* 内容垂直居中 */
         }
-        nav ul li a:hover {
-            color: #fff;
+
+        .nav-links a.btn {
+            padding: 0.5rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
         }
-        /* 英雄区 */
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
         .hero {
+            padding: 4rem 0;
             text-align: center;
-            padding: 80px 0 60px 0;
-            background: linear-gradient(120deg, #232526 0%, #414345 100%);
-            border-radius: 0 0 40px 40px;
-            box-shadow: 0 8px 32px #0006;
         }
+        
         .hero h1 {
             font-size: 3rem;
-            margin-bottom: 20px;
-            color: #00ffe7;
-            text-shadow: 0 0 20px #00ffe755;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
         }
+        
         .hero p {
-            font-size: 1.3rem;
-            color: #e0e6edcc;
-            margin-bottom: 30px;
+            font-size: 1.25rem;
+            color: var(--text-light);
+            max-width: 800px;
+            margin: 0 auto 2rem;
         }
-        .hero .cta {
+        
+        a {
+            text-decoration: none;
+        }
+        
+        .btn {
             display: inline-block;
-            padding: 14px 40px;
-            background: linear-gradient(90deg, #00ffe7 0%, #007cf0 100%);
-            color: #222;
-            font-size: 1.2rem;
-            border-radius: 30px;
-            font-weight: bold;
-            box-shadow: 0 4px 24px #00ffe755;
-            transition: background 0.2s, color 0.2s;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            /* 按钮样式微调 */
+            padding: 0.5rem 1.5rem; /* 调整按钮内边距与其他链接对齐 */
+            line-height: 1.8;        /* 统一行高 */
+
         }
-        .hero .cta:hover {
-            background: #fff;
-            color: #007cf0;
+        
+        .btn:hover {
+            background-color: var(--primary-hover);
         }
-        /* 功能区 */
+        
         .features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 40px;
-            justify-content: center;
-            margin: 60px 0;
+            padding: 4rem 0;
         }
-        .feature-card {
-            background: rgba(44, 83, 100, 0.85);
-            border-radius: 20px;
-            box-shadow: 0 4px 24px #00ffe722;
-            padding: 36px 28px;
-            width: 320px;
+        
+        .section-title {
             text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             transition: transform 0.2s, box-shadow 0.2s;
         }
+        
         .feature-card:hover {
-            transform: translateY(-8px) scale(1.03);
-            box-shadow: 0 8px 32px #00ffe799;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        .feature-card h3 {
-            color: #00ffe7;
-            margin-bottom: 16px;
+        
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
         }
-        .feature-card p {
-            color: #e0e6edcc;
-            font-size: 1.05rem;
+        
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
-        /* 团队区 */
-        .team {
-            margin: 60px 0 40px 0;
-            text-align: center;
+        
+        .feature-desc {
+            color: var(--text-light);
         }
-        .team h2 {
-            color: #00ffe7;
-            margin-bottom: 30px;
-        }
-        .team-members {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: center;
-        }
-        .member {
-            background: rgba(44, 83, 100, 0.7);
-            border-radius: 16px;
-            padding: 24px 18px;
-            width: 180px;
-            box-shadow: 0 2px 12px #00ffe722;
-        }
-        .member img {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            margin-bottom: 12px;
-            border: 2px solid #00ffe7;
-        }
-        .member h4 {
-            color: #fff;
-            margin-bottom: 6px;
-        }
-        .member p {
-            color: #00ffe7cc;
-            font-size: 0.95rem;
-        }
-        /* 联系方式 */
-        .contact {
-            background: linear-gradient(90deg, #232526 0%, #414345 100%);
-            padding: 40px 0;
-            text-align: center;
-            border-radius: 30px;
-            margin-bottom: 40px;
-        }
-        .contact h2 {
-            color: #00ffe7;
-            margin-bottom: 18px;
-        }
-        .contact p {
-            color: #e0e6edcc;
-            font-size: 1.1rem;
-        }
-        /* 页脚 */
+        
         footer {
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
             text-align: center;
-            color: #00ffe7aa;
-            padding: 18px 0;
-            font-size: 1rem;
-            background: #141e30;
-            border-radius: 20px 20px 0 0;
-            letter-spacing: 1px;
-        }
-        /* 响应式 */
-        @media (max-width: 900px) {
-            .features { flex-direction: column; align-items: center; }
-            .team-members { flex-direction: column; align-items: center; }
+            color: var(--text-light);
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container nav">
-            <div class="logo">OmniMedAI</div>
+        <div class="container">
             <nav>
-                <ul>
-                    <li><a href="#features">功能</a></li>
-                    <li><a href="#team">团队</a></li>
-                    <li><a href="#contact">联系</a></li>
-                </ul>
+                <a href="/" class="logo">OmniMedAI</a>
+                <div style="display: flex; align-items: center;">
+                    <div class="nav-links">
+                        <a href="#features">Features</a>
+                        <a href="#about">About</a>
+                        <a href="#contact">Contact</a>
+                        <a href="#" class="btn">Get Started</a>
+                    </div>
+                </div>
             </nav>
         </div>
     </header>
-    <section class="hero">
-        <h1>OmniMedAI</h1>
-        <p>全能医学AI平台，赋能医疗影像、临床数据与智能诊断，助力精准医疗新时代。</p>
-        <a class="cta" href="#features">探索功能</a>
-    </section>
-    <section class="container" id="features">
-        <div class="features">
-            <div class="feature-card">
-                <h3>多模态医学影像分析</h3>
-                <p>支持CT、MRI、超声等多种医学影像自动处理与特征提取，助力疾病精准识别。</p>
+    
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Precision Medicine Powered by Multimodal AI</h1>
+                <p>OmniMedAI integrates radiomics, deep learning, pathology analysis, and genomics to transform medical decision-making from experience-driven to AI+data-driven.</p>
+                <div style="margin: -2rem 2rem -0.1rem 2rem; font-size: 28px; font-weight: 500;">
+                    <a href="https://github.com/OminiMedAI/OmniMedAI" target="_blank" style="color: var(--text-light); margin-right: 1rem;">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="mailto:omnimai@foxmail.com" style="color: var(--text-light);">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+                <a href="#" class="btn">Request Demo</a>
             </div>
-            <div class="feature-card">
-                <h3>智能临床数据融合</h3>
-                <p>自动整合临床、组学、影像等多源数据，深度挖掘医学信息，提升诊断准确率。</p>
+        </section>
+        
+        <section class="features" id="features">
+            <div class="container">
+                <h2 class="section-title">Platform Capabilities</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🖥️</div>
+                        <h3 class="feature-title">Multimodal Data Integration</h3>
+                        <p class="feature-desc">Seamlessly combine imaging, genomic, pathology and clinical data for comprehensive patient analysis.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3 class="feature-title">Advanced AI Algorithms</h3>
+                        <p class="feature-desc">Proprietary deep learning models trained on diverse medical datasets for superior performance.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">Prognostic Analytics</h3>
+                        <p class="feature-desc">Accurate survival analysis and disease progression prediction powered by machine learning.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">💊</div>
+                        <h3 class="feature-title">Personalized Therapy</h3>
+                        <p class="feature-desc">Treatment recommendations tailored to individual patient characteristics and biomarker profiles.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🔄</div>
+                        <h3 class="feature-title">Modular Architecture</h3>
+                        <p class="feature-desc">Flexible platform design allows easy integration with hospital systems and research workflows.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🔬</div>
+                        <h3 class="feature-title">Research Tools</h3>
+                        <p class="feature-desc">Comprehensive suite for medical researchers to develop and validate new AI models.</p>
+                    </div>
+                </div>
             </div>
-            <div class="feature-card">
-                <h3>AI模型自动训练与评估</h3>
-                <p>一键式机器学习/深度学习模型训练、调参与可视化，支持多种主流算法。</p>
-            </div>
-            <div class="feature-card">
-                <h3>可视化与决策支持</h3>
-                <p>丰富的统计分析与可视化工具，辅助医生科学决策，提升临床效率。</p>
-            </div>
-        </div>
-    </section>
-    <section class="team" id="team">
-        <h2>核心团队</h2>
-        <div class="team-members">
-            <div class="member">
-                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai1" alt="AI专家">
-                <h4>朱博士</h4>
-                <p>AI算法专家</p>
-            </div>
-            <div class="member">
-                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai2" alt="医学影像">
-                <h4>谢教授</h4>
-                <p>医学影像专家</p>
-            </div>
-            <div class="member">
-                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai3" alt="数据工程">
-                <h4>孙博士</h4>
-                <p>医学影像专家</p>
-            </div>
-            <div class="member">
-                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=ai4" alt="产品经理">
-                <h4>赵经理</h4>
-                <p>产品经理</p>
-            </div>
-        </div>
-    </section>
-    <section class="container contact" id="contact">
-        <h2>联系我们</h2>
-        <p>邮箱：<a href="mailto:zqyhit@qq.com">zqyhit@qq.com</a></p>
-        <!--         <p>地址：上海市徐汇区枫林路</p> -->
-    </section>
+        </section>
+    </main>
+    
     <footer>
-        © 2024 OmniMedAI | 赋能医疗 · 智启未来
+        <div class="container">
+            <p>© 2023 OmniMedAI Platform. All rights reserved.</p>
+            <p>Developed with ❤️ by our research team</p>
+        </div>
     </footer>
 </body>
 </html>
