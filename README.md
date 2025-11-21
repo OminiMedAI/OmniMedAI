@@ -151,7 +151,7 @@ OmniMedAI bridges the gap between heterogeneous medical data and actionable insi
 - **Technology Transfer**: Direct pathway from academic research to FDA/CE-certified clinical tools (CETC 41st Research Institute).
 
 
-## Contact
+## Contact US
 
 For the Professional version, please contact:
 - **Email**: <acezqy@gmail.com>
