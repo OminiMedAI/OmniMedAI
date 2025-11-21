@@ -1,0 +1,1 @@
+# Detection models (placeholder for future implementation)
