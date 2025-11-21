@@ -149,3 +149,9 @@ OmniMedAI bridges the gap between heterogeneous medical data and actionable insi
 - **Interdisciplinary Expertise**: Combines clinical medicine (Zhongshan Hospital, Tongji Hospital), engineering (Xidian University, HIT), and bioinformatics (Fudan University).
 - **Global Validation**: Multicenter datasets spanning Chinese (Xijing Hospital, Jiangsu Provincial People's Hospital), European (UCD), and Australian (Adelaide) cohorts.
 - **Technology Transfer**: Direct pathway from academic research to FDA/CE-certified clinical tools (CETC 41st Research Institute).
+
+
+## Contact
+
+For the Professional version, please contact:
+- **Email**: <acezqy@gmail.com>
