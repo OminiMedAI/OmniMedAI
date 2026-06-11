@@ -1,157 +1,359 @@
 # OmniMedAI: Omni Medical AI Platform
 
-![img](./logo.png)
+![OmniMedAI logo](./logo.png)
 
-## Abstract
+OmniMedAI is a modular medical AI platform for heterogeneous biomedical data
+analysis. It helps researchers and clinical AI teams build reproducible
+workflows across medical imaging, radiomics, pathology, habitat analysis,
+multimodal fusion, model training, evaluation, and reporting.
 
-OmniMedAI is an advanced AI-driven platform designed to integrate and analyze heterogeneous medical data, including radiological imaging, digital pathology, genomics, and clinical records. Leveraging cutting-edge techniques in radiomics, deep learning, habitat analysis, and multi-instance learning, the platform enables researchers and clinicians to build robust predictive models for disease diagnosis, prognosis, and personalized treatment planning.  
+The repository currently provides a Python SDK-style platform foundation. Some
+advanced capabilities described in the roadmap, such as federated learning,
+large-scale clinical deployment, genomic pipelines, and full model governance,
+are planned or integration-level features rather than complete out-of-the-box
+modules.
 
+![OmniMedAI platform overview](./platform.jpg)
 
+## Platform Scope
 
-## System Architecture  
+OmniMedAI is designed around the following end-to-end workflow:
 
-> OmniMedAI adopts a modular architecture to support end-to-end multimodal data analysis:  
+```text
+Data ingestion
+  -> Medical preprocessing
+  -> Segmentation / ROI preparation
+  -> Feature engineering
+  -> Multimodal fusion
+  -> Modeling
+  -> Evaluation and interpretation
+  -> Reporting and collaboration
+```
 
+## Current Modules
 
-![img](./platform.jpg){ width="800" height="600" style="display: block; margin: 0 auto" }
+| Capability | Module | Status |
+|---|---|---|
+| Medical image preprocessing, DICOM/NIfTI conversion, ROI cropping | `onem_process` | Available |
+| Radiomics feature extraction from images and masks | `onem_radiomics` | Available |
+| Automatic ROI segmentation framework with 2D/3D model selection | `onem_segment` | Framework available; pretrained weights required for real inference |
+| Digital pathology feature extraction | `onem_path` | Available baseline; optional CellProfiler/TITAN dependencies |
+| Habitat and intratumoral heterogeneity analysis | `onem_habitat` | Available baseline |
+| Deep-learning model components | `onem_torch` | Available baseline |
+| Multimodal feature fusion | `onem_fusion` | Newly added baseline |
+| Feature-table modeling | `onem_modeling` | Newly added baseline |
+| Model evaluation and reporting metrics | `onem_eval` | Newly added baseline |
+| Notebook tutorials and example workflows | `onem_start` | Available |
 
-1. **Data Integration Module**  
-   • Supports import of DICOM, CSV, HDF5, and other formats.  
+## Core Capabilities
 
-   • Integrates tools like ITK-SNAP (for ROI segmentation in radiology) and 3D Slicer (for 3D visualization).  
+### 1. Data Ingestion and Preprocessing
 
-2. **Preprocessing Engine**  
-   • Normalization: Z-score scaling and min-max normalization to [-1, 1].  
+- Import and convert medical imaging data such as DICOM and NIfTI.
+- Normalize intensity values with Z-score, min-max, percentile, and windowing workflows.
+- Resample, crop, pad, and extract ROI volumes.
+- Batch-convert image/mask datasets for downstream modeling.
 
-   • Data Augmentation: Random cropping, horizontal/vertical flipping (training-only).  
+Primary module: `onem_process`
 
-   • Whole-Slide Image (WSI) Processing: QuPath (annotation) + CellProfiler (feature extraction) for histopathology.  
+### 2. Segmentation and ROI Preparation
 
-3. **Feature Engineering**  
-   • Radiomics: Extracts 1,500+ features (shape, texture, intensity) using Pyradiomics (e.g., Laplacian of Gaussian (LoG) filtering, wavelet transforms).  
+- Analyze image dimensionality and slice characteristics.
+- Choose 2D or 3D segmentation workflows based on image structure.
+- Manage model loading, inference, post-processing, and NIfTI mask export.
 
-   • Deep Learning: Models like UNet (segmentation), Swin Transformer (feature extraction), and transfer learning with ResNet/DenseNet.  
+Primary module: `onem_segment`
 
-   • Pathomics: Grad-CAM visualization + TF-IDF weighted bag-of-words (BoW) for WSI analysis.  
+Note: this module provides the segmentation framework. Real segmentation
+requires compatible model definitions and pretrained weights.
 
-4. **Model Training & Evaluation**  
-   • Algorithms: COX regression, SVM, XGBoost, LightGBM.  
+### 3. Feature Engineering
 
-   • Metrics: AUC, F1-score, calibration curves, decision curve analysis (DCA).  
+- Extract radiomics features with PyRadiomics, including first-order, texture,
+  and shape features.
+- Extract pathology features from histology images with traditional image
+  features and deep feature interfaces.
+- Compute local radiomics features and perform habitat clustering for
+  intratumoral heterogeneity analysis.
+- Use deep model components from `onem_torch` for classification or feature
+  extraction research.
 
-   • Federated Learning: Secure, decentralized training across institutions.  
+Primary modules: `onem_radiomics`, `onem_path`, `onem_habitat`, `onem_torch`
 
+### 4. Multimodal Fusion
 
+- Align feature tables by patient or sample ID.
+- Combine radiomics, pathomics, clinical, genomic, habitat, and deep features.
+- Add modality prefixes to prevent feature-name collisions.
+- Create modeling-ready fused feature tables.
 
-## Technical Highlights  
+Primary module: `onem_fusion`
 
-1. Multi-Instance Learning (MIL) Fusion  
-    • Probability Histogram (PLH): Generates slice-level prediction distributions.  
+### 5. Modeling
 
-    • BoW with TF-IDF: Encodes slice-level features into a global signature.  
+- Train baseline tabular models from extracted or fused features.
+- Support common classification and regression workflows.
+- Provide a clean starting point for radiomics, clinical, and multimodal
+  predictive modeling.
 
-    • Early Fusion: Concatenates PLH and BoW features:  
+Primary module: `onem_modeling`
 
-    $$
-    \text{feature}_{fusion} = Histo_{prob} \oplus Histo_{pred} \oplus Bow_{prob} \oplus Bow_{pred}
-    $$
+### 6. Evaluation and Interpretation
 
-2. Survival Analysis & Imbalanced Data Handling  
-    • KM Survival Curves: Log-rank test for group comparison:  
+- Compute accuracy, F1-score, recall, precision, confusion matrix, and AUC.
+- Evaluate regression models with MAE, MSE, and R2.
+- Prepare outputs for reports and external validation summaries.
 
-    $$
-    \hat{S}(t) = \prod_{t_i \leq t} \left(1 - \frac{d_i}{n_i}\right)
-    $$
-    • SMOTE Oversampling: Balances classes during training.  
+Primary module: `onem_eval`
 
-3. Model Interpretability  
-    • Grad-CAM: Visualizes attention maps for radiology/WSI models.  
+Planned extensions include calibration curves, decision curve analysis,
+confidence intervals, SHAP summaries, Grad-CAM hooks, and clinical report
+generation.
 
-    • SHAP Values: Quantifies feature importance (e.g., gene mutations).  
+## Installation
 
+The project is currently organized as local Python packages. A unified
+dependency file is planned. For now, install dependencies according to the
+workflow you need.
 
+### Minimal
 
-## Applications & Case Studies
+```bash
+pip install numpy pandas scikit-learn
+```
 
-1. **Oncology**
-    • ​**​Pancreatic Ductal Adenocarcinoma (PDAC):**​
-   - Predicts KRAS mutation status using MRI-based intratumoral heterogeneity features (e.g., texture complexity, kinetic parameters) (**Shen et al., \*Abdom Radiol (NY)\*, 2025**).
-   - Assesses lymph node metastasis risk via contrast-enhanced MRI habitat analysis (**Shen et al., \*Insights Imaging\*, 2025**).
-   - Identifies SMAD4 mutations by integrating preoperative MRI radiomics and clinical variables (**Li et al., \*BMC Med Imaging\*, 2024**).
-      • ​**​Lung Adenocarcinoma:**​
-   - Preoperative prediction of vasculogenic mimicry using CT radiomics (**Li et al., \*Clin Radiol\*, 2024**).
-2. **Liver Imaging**
-    • Accelerates MRI acquisition with deep learning-reconstructed ultra-fast respiratory-triggered T2-weighted imaging (scan time reduced to 30s) (​**​Liu et al., \*Magn Reson Imaging\*, 2024​**​).
-3. **Immunotherapy Response**
-    • HCC Immune Subtyping: MRI radiomics + VAE latent space analysis (Guo et al., 2021).
-4. **Cardiovascular Risk**
-    • Coronary Plaque Classification: CCTA-based deep learning (Huang et al., 2020).
+### Medical Imaging
 
-------
+```bash
+pip install nibabel pydicom SimpleITK scipy opencv-python scikit-image
+```
+
+### Radiomics
+
+```bash
+pip install pyradiomics
+```
+
+### Pathology
+
+```bash
+pip install Pillow scikit-image matplotlib
+# Optional for full CellProfiler workflows:
+pip install cellprofiler
+```
+
+### Deep Learning
+
+```bash
+pip install torch torchvision monai
+```
+
+### Tutorials
+
+```bash
+pip install jupyter seaborn
+```
+
+## Quick Start
+
+### Radiomics Feature Extraction
+
+```python
+from onem_radiomics import RadiomicsExtractor, PRESET_CONFIGS
+
+extractor = RadiomicsExtractor(PRESET_CONFIGS["ct_lung"])
+result = extractor.extract_features(
+    image_path="data/images/patient001.nii.gz",
+    mask_path="data/masks/patient001_mask.nii.gz",
+    patient_id="patient001"
+)
+
+print(len(result["features"]))
+```
+
+### Multimodal Fusion
+
+```python
+from onem_fusion import FeatureFusion, FusionConfig
+
+fusion = FeatureFusion(FusionConfig(
+    id_column="patient_id",
+    join_strategy="inner",
+    modality_prefixes={
+        "radiomics": "rad",
+        "clinical": "clin",
+        "pathology": "path"
+    }
+))
+
+fused = fusion.fit_transform({
+    "radiomics": "output/radiomics_features.csv",
+    "clinical": "data/clinical.csv",
+    "pathology": "output/pathology_features.csv"
+})
+
+fusion.save(fused, "output/fused_features.csv")
+```
+
+### Modeling and Evaluation
+
+```python
+from onem_modeling import ModelingConfig, train_tabular_model
+from onem_eval import EvaluationConfig, ModelEvaluator
+
+result = train_tabular_model(
+    csv_path="output/fused_features.csv",
+    label_column="label",
+    config=ModelingConfig(task="classification", model_type="random_forest")
+)
+
+metrics = ModelEvaluator(EvaluationConfig(task="classification")).evaluate(
+    y_true=result["y_test"],
+    y_pred=result["predictions"],
+    y_proba=result["probabilities"]
+)
+
+print(metrics["accuracy"])
+```
+
+## Notebooks
+
+The `onem_start` folder contains guided notebooks:
+
+- `00_Quick_Start_Tutorial.ipynb`: first platform walkthrough.
+- `01_Radiomics_Feature_Extraction.ipynb`: radiomics feature extraction.
+- `02_ROI_Segmentation.ipynb`: ROI segmentation workflow.
+- `03_Pathology_Analysis.ipynb`: pathology feature extraction.
+- `04_Comprehensive_Workflow.ipynb`: end-to-end multimodal workflow.
+
+## Roadmap
+
+### Near Term
+
+- Add a unified `requirements.txt` or `pyproject.toml`.
+- Convert root prototype scripts into stable CLI or module entry points.
+- Add lightweight test datasets and reproducible demo commands.
+- Expand `onem_modeling` with cross-validation and feature selection.
+- Expand `onem_eval` with calibration curves, decision curve analysis, and
+  confidence intervals.
+
+### Platform Extensions
+
+- Clinical table processing and data dictionary validation.
+- Genomic and molecular feature ingestion.
+- Survival analysis, Cox models, and time-to-event validation.
+- Advanced multimodal fusion: early fusion, late fusion, MIL, attention fusion.
+- Experiment tracking and model versioning.
+- Federated learning and privacy-preserving multi-center training.
+- Automated clinical report generation.
+
+## Clinical and Research Notes
+
+OmniMedAI is intended for research and translational development. Clinical use
+requires local validation, regulatory review, privacy governance, and
+institution-specific quality control.
+
+Recommended practices:
+
+- Use de-identified data.
+- Keep train, validation, internal test, and external test cohorts separated.
+- Record preprocessing settings and feature extraction parameters.
+- Validate models across scanners, institutions, and patient subgroups.
+- Report calibration, decision-curve utility, and confidence intervals when
+  targeting clinical decision support.
+
+## Development Consortium
+
+OmniMedAI is a collaborative effort involving research and clinical partners
+focused on multimodal medical data analysis, precision medicine, imaging
+biomarkers, pathology AI, and privacy-preserving learning.
+
+### Core Development and Clinical Translation
+
+- Fudan University, China: multimodal data fusion and computational pathology.
+- Zhongshan Hospital, Fudan University, China: clinical research design,
+  cohort validation, and translational evaluation.
+- Bengbu Medical College, China: medical AI workflow development and education.
+- The First Affiliated Hospital of Bengbu Medical College, China: clinical
+  scenario validation and dataset curation.
+- Southeast University, China: medical image analysis and AI algorithm
+  optimization.
+- Zhejiang Provincial People's Hospital, China: oncology dataset curation and
+  clinical validation.
+- Xijing Hospital, China: advanced imaging biomarker research.
+- Shanghai Jiao Tong University, China: deep-learning model development.
+- Harbin Institute of Technology, China: privacy-preserving and federated
+  learning research.
+- North University of China, China: signal processing and hardware integration.
+- Shanxi University, China: genomic and bioinformatics analysis.
+- Anhui Science and Technology University, China: edge-computing and applied
+  AI workflows.
+- CETC 41st Research Institute, China: precision medical device research and
+  development.
+- Jiangsu Provincial People's Hospital, China: clinical data validation and
+  chronic disease research.
+- Xidian University, China: communication technologies and embedded systems
+  integration.
+- Tongji Hospital, Wuhan, China: large-scale clinical cohort studies and
+  therapeutic evaluation.
+
+### International Partners
+
+- University College Dublin, Ireland: radiogenomics and translational research.
+- University of Adelaide, Australia: interpretable AI and clinical decision
+  support.
+
+### Collaboration Focus
+
+- Interdisciplinary development across clinical medicine, medical imaging,
+  pathology, engineering, and bioinformatics.
+- Multi-center validation across institutional cohorts.
+- Translation from research prototypes to regulated clinical AI workflows.
 
 ## Key References
 
-### **Radiomics & Deep Learning**
+The following publications and research directions informed the platform
+architecture, use cases, and roadmap.
 
-1. **Chen et al. (2022).** *J Gastroenterology*. MRI radiomics for mucosal healing prediction in Crohn’s disease.
-2. **Shen et al. (2025).** *Abdom Radiol (NY)*. Correlation of MRI characteristics with KRAS mutation status in pancreatic ductal adenocarcinoma.
-3. **Shen et al. (2025).** *Insights Imaging*. Contrast-enhanced MRI-based intratumoral heterogeneity assessment for predicting lymph node metastasis in PDAC.
-4. **Li et al. (2024).** *BMC Med Imaging*. SMAD4-mutated PDAC identification using preoperative MRI and clinical data.
+### Radiomics and Deep Learning
 
-### **Pathomics & WSI**
+1. Chen et al. (2022). MRI radiomics for mucosal healing prediction in Crohn's
+   disease. *Journal of Gastroenterology*.
+2. Shen et al. (2025). Correlation of MRI characteristics with KRAS mutation
+   status in pancreatic ductal adenocarcinoma. *Abdominal Radiology (NY)*.
+3. Shen et al. (2025). Contrast-enhanced MRI-based intratumoral heterogeneity
+   assessment for predicting lymph node metastasis in pancreatic ductal
+   adenocarcinoma. *Insights into Imaging*.
+4. Li et al. (2024). SMAD4-mutated pancreatic ductal adenocarcinoma
+   identification using preoperative MRI and clinical data. *BMC Medical
+   Imaging*.
+5. Li et al. (2024). Preoperative prediction of vasculogenic mimicry in lung
+   adenocarcinoma using CT radiomics. *Clinical Radiology*.
 
-1. **Liu et al. (2020).** *Neuro-Oncology*. Automated glioma subtyping via MRI radiomics.
-2. **Yang et al. (2020).** *Eur Radiology*. Preoperative cervical cancer radiomics.
+### Pathomics and Whole-Slide Imaging
 
-### **Technical Innovations**
+1. Liu et al. (2020). Automated glioma subtyping via MRI radiomics.
+   *Neuro-Oncology*.
+2. Yang et al. (2020). Preoperative cervical cancer radiomics.
+   *European Radiology*.
 
-1. **Liu et al. (2024).** *Magn Reson Imaging*. Deep learning-reconstructed liver MRI.
-2. **Huang et al. (2021).** *Gut*. Federated learning for privacy-preserving AI.
-3. **Zhang et al. (2022).** *IEEE JBHI*. Multi-instance learning for diagnostic robustness.
+### Technical Directions
 
-------
+1. Liu et al. (2024). Deep learning-reconstructed ultra-fast
+   respiratory-triggered T2-weighted liver MRI. *Magnetic Resonance Imaging*.
+2. Huang et al. (2021). Federated learning for privacy-preserving medical AI.
+   *Gut*.
+3. Zhang et al. (2022). Multi-instance learning for robust diagnostic modeling.
+   *IEEE Journal of Biomedical and Health Informatics*.
+4. Guo et al. (2021). MRI radiomics and VAE latent-space analysis for HCC immune
+   subtyping.
 
-## Summary
+Note: references are retained from the original project description and should
+be verified against the final manuscript or product documentation before formal
+citation.
 
-OmniMedAI bridges the gap between heterogeneous medical data and actionable insights. Its modular design and validated workflows position it as a cornerstone for translational research in precision medicine. Future updates will expand support for emerging modalities (e.g., liquid biopsy) and multimodal fusion techniques.
+## Contact
 
+For professional or collaboration inquiries, please contact:
 
-## **OmniMedAI Development Consortium**
-
-**OmniMedAI** is a collaborative effort developed by the following institutions and research experts:
-
-### **Core Development Leaders**  & **Collaborating Institutions**
-
-- **Fudan University** (China) – Multimodal data fusion and computational pathology
-- **Zhongshan Hospital, Fudan University** (China) – Clinical trial design and validation
-- **Bengbu Medical College** (China)
-- **The First Affiliated Hospital of Bengbu Medical College** (China)
-- **Southeast University** (China) – Medical imaging analysis and AI algorithm optimization
-- **Zhejiang Provincial People’s Hospital** (China) – Oncology dataset curation
-- **Xijing Hospital** (China) – Advanced imaging biomarker research
-- **Shanghai Jiao Tong University** (China) – Deep learning model development
-- **Harbin Institute of Technology** (China) – Privacy-preserving federated learning
-- **North University of China** (China) – Signal processing and hardware integration
-- **Shanxi University** (China) – Genomic data analysis
-- **Anhui Science and Technology University** (China) – Edge computing solutions
-- **CETC 41st Research Institute** (China) – Precision medical device R&D
-- **Jiangsu Provincial People's Hospital** (China) – Clinical data validation and chronic disease research
-- **Xidian University** (China) – Communication technologies and embedded systems integration
-- **Tongji Hospital, Wuhan** (China) – Large-scale clinical cohort studies and therapeutic evaluation
-
-#### **International Partners**
-
-- **University College Dublin** (Ireland) – Radiogenomics and translational research
-- **University of Adelaide** (Australia) – Interpretable AI and clinical decision support
-
-### **Key Collaboration Features**
-
-- **Interdisciplinary Expertise**: Combines clinical medicine (Zhongshan Hospital, Tongji Hospital), engineering (Xidian University, HIT), and bioinformatics (Fudan University).
-- **Global Validation**: Multicenter datasets spanning Chinese (Xijing Hospital, Jiangsu Provincial People's Hospital), European (UCD), and Australian (Adelaide) cohorts.
-- **Technology Transfer**: Direct pathway from academic research to FDA/CE-certified clinical tools (CETC 41st Research Institute).
-
-
-## Contact US
-
-For the Professional version, please contact:
-- **Email**: <acezqy@gmail.com>
+- Email: <acezqy@gmail.com>
