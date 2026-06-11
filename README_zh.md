@@ -6,7 +6,7 @@ OmniMedAI 是一个面向异构医学数据分析的模块化 AI 平台，目标
 
 当前仓库更接近一个 Python SDK 形态的平台底座。README 中涉及的联邦学习、大规模临床部署、基因组学流水线、完整模型治理等能力属于平台路线图或集成方向，并非全部已经开箱即用。
 
-![OmniMedAI platform overview](./platform.jpg)
+![OmniMedAI platform overview](./platform-m-fusion-p.png)
 
 ## 平台工作流
 
@@ -22,6 +22,17 @@ OmniMedAI 的整体流程可以概括为：
   -> 评估与解释
   -> 报告与协作
 ```
+
+## 流程图
+
+建议图片命名：
+
+- `docs/assets/omnimedai-platform-workflow.png`：整体平台功能流程图。
+- `docs/assets/omnimedai-module-workflow-map.png`：模块工作流矩阵图。
+
+![OmniMedAI 整体平台功能流程图](./docs/assets/omnimedai-platform-workflow.png)
+
+![OmniMedAI 模块工作流矩阵图](./docs/assets/omnimedai-module-workflow-map.png)
 
 ## 当前模块
 

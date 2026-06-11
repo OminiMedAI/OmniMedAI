@@ -3,261 +3,1213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniMedAI | AI-Powered Precision Medicine Platform</title>
+    <title>OmniMedAI | Multimodal Medical AI Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --background: #ffffff;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --radius: 0.5rem;
+            --bg: #f7f8fa;
+            --surface: #ffffff;
+            --surface-soft: #f1f7f5;
+            --ink: #111827;
+            --muted: #64748b;
+            --primary: #1e3a5f;
+            --primary-soft: #e8eef5;
+            --teal: #0f766e;
+            --green: #10b981;
+            --cyan: #06b6d4;
+            --violet: #7c3aed;
+            --amber: #f59e0b;
+            --border: #dde3ea;
+            --shadow: 0 24px 80px rgba(17, 24, 39, 0.10);
+            --radius: 8px;
         }
-        
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
-        
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            min-width: 320px;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(6, 182, 212, 0.10), transparent 34rem),
+                linear-gradient(180deg, #fbfcfd 0%, var(--bg) 38%, #ffffff 100%);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             line-height: 1.6;
-            color: var(--text);
-            background-color: var(--background);
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        header {
-            padding: 1.5rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
+
+        a {
+            color: inherit;
             text-decoration: none;
         }
-        
-        
+
+        .container {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid rgba(221, 227, 234, 0.86);
+            background: rgba(247, 248, 250, 0.88);
+            backdrop-filter: blur(18px);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 76px;
+            gap: 24px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            letter-spacing: 0;
+            color: var(--primary);
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 36px;
+            height: 36px;
+            place-items: center;
+            border: 1px solid rgba(15, 118, 110, 0.26);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #ffffff 0%, #eaf6f4 100%);
+            box-shadow: 0 8px 24px rgba(15, 118, 110, 0.14);
+        }
+
+        .brand-mark::before {
+            width: 16px;
+            height: 16px;
+            border: 3px solid var(--teal);
+            border-right-color: var(--cyan);
+            border-radius: 50%;
+            content: "";
+        }
+
         .nav-links {
             display: flex;
-            align-items: center;  /* 确保所有子元素垂直居中 */
-            gap: 1.5rem;
-        }
-        
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-            padding: 0.5rem 0;    /* 增加垂直内边距 */
-            display: inline-flex;  /* 避免行高差异 */
-            align-items: center;   /* 内容垂直居中 */
+            align-items: center;
+            gap: 22px;
+            color: var(--muted);
+            font-size: 0.94rem;
+            font-weight: 650;
         }
 
-        .nav-links a.btn {
-            padding: 0.5rem 1.5rem;
-            background-color: var(--primary);
-            color: white;
+        .nav-links a {
+            transition: color 0.18s ease;
         }
-        
+
         .nav-links a:hover {
+            color: var(--teal);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-link {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
             color: var(--primary);
+            background: rgba(255, 255, 255, 0.76);
+            transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
         }
-        
+
+        .icon-link:hover {
+            color: var(--teal);
+            border-color: rgba(15, 118, 110, 0.38);
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 720;
+            box-shadow: 0 14px 34px rgba(30, 58, 95, 0.22);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .btn:hover {
+            background: #16304f;
+            transform: translateY(-1px);
+            box-shadow: 0 18px 44px rgba(30, 58, 95, 0.28);
+        }
+
+        .btn.secondary {
+            border-color: var(--border);
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
         .hero {
-            padding: 4rem 0;
-            text-align: center;
+            padding: 92px 0 68px;
         }
-        
-        .hero h1 {
-            font-size: 3rem;
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.02fr) minmax(420px, 0.98fr);
+            align-items: center;
+            gap: 56px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+            padding: 7px 11px;
+            border: 1px solid rgba(15, 118, 110, 0.22);
+            border-radius: 999px;
+            color: var(--teal);
+            background: rgba(236, 253, 245, 0.78);
+            font-size: 0.78rem;
             font-weight: 800;
-            margin-bottom: 1.5rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--green);
+            box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.14);
+        }
+
+        h1 {
+            max-width: 760px;
+            color: var(--primary);
+            font-size: clamp(2.8rem, 4.7vw, 4.6rem);
+            font-weight: 840;
+            line-height: 1.04;
+            letter-spacing: 0;
+        }
+
+        .hero-copy {
+            max-width: 690px;
+            margin-top: 26px;
+            color: var(--muted);
+            font-size: 1.16rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 34px;
+        }
+
+        .hero-panel {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(221, 227, 234, 0.88);
+            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 247, 245, 0.86));
+            box-shadow: var(--shadow);
+        }
+
+        .hero-panel::before {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(30, 58, 95, 0.05) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(30, 58, 95, 0.05) 1px, transparent 1px);
+            background-size: 34px 34px;
+            content: "";
+            mask-image: linear-gradient(180deg, rgba(0,0,0,0.72), transparent);
+        }
+
+        .dashboard-shell {
+            position: relative;
+            padding: 18px;
+        }
+
+        .dashboard-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 750;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--teal);
+        }
+
+        .status-pill::before {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--green);
+            content: "";
+        }
+
+        .dashboard-main {
+            display: grid;
+            grid-template-columns: 1fr 0.72fr;
+            gap: 14px;
+        }
+
+        .scan-card,
+        .metric-card,
+        .micro-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.86);
+        }
+
+        .scan-card {
+            min-height: 310px;
+            padding: 16px;
+        }
+
+        .scan-frame {
+            position: relative;
+            height: 232px;
+            overflow: hidden;
+            border-radius: 8px;
+            background:
+                radial-gradient(circle at 47% 48%, rgba(6, 182, 212, 0.52), transparent 20%),
+                radial-gradient(circle at 50% 49%, rgba(30, 58, 95, 0.90), transparent 42%),
+                linear-gradient(135deg, #0d1728 0%, #1e3a5f 100%);
+        }
+
+        .scan-frame::before,
+        .scan-frame::after {
+            position: absolute;
+            inset: 26px 70px;
+            border: 1px solid rgba(255, 255, 255, 0.34);
+            border-radius: 50%;
+            content: "";
+        }
+
+        .scan-frame::after {
+            inset: 56px 98px;
+            border-color: rgba(16, 185, 129, 0.68);
+        }
+
+        .scan-caption {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .panel-stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .metric-card {
+            padding: 15px;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 720;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .metric-value {
+            margin-top: 8px;
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 860;
+        }
+
+        .bars {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .bar {
+            height: 8px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e8eef5;
+        }
+
+        .bar span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--teal), var(--cyan));
+        }
+
+        .micro-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .micro-card {
+            padding: 13px;
+        }
+
+        .micro-card strong {
+            display: block;
+            color: var(--primary);
+            font-size: 1.18rem;
             line-height: 1.2;
         }
-        
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--text-light);
-            max-width: 800px;
-            margin: 0 auto 2rem;
-        }
-        
-        a {
-            text-decoration: none;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary);
-            color: white;
-            border-radius: var(--radius);
-            text-decoration: none;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            /* 按钮样式微调 */
-            padding: 0.5rem 1.5rem; /* 调整按钮内边距与其他链接对齐 */
-            line-height: 1.8;        /* 统一行高 */
 
+        .micro-card span {
+            color: var(--muted);
+            font-size: 0.76rem;
+            font-weight: 650;
         }
-        
-        .btn:hover {
-            background-color: var(--primary-hover);
+
+        .section {
+            padding: 76px 0;
         }
-        
-        .features {
-            padding: 4rem 0;
+
+        .section.alt {
+            background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(241,247,245,0.55));
         }
-        
-        .section-title {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 3rem;
+
+        .section-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 30px;
         }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+
+        .section-kicker {
+            margin-bottom: 8px;
+            color: var(--teal);
+            font-size: 0.76rem;
+            font-weight: 850;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
         }
-        
-        .feature-card {
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .feature-icon {
-            font-size: 2rem;
+
+        h2 {
             color: var(--primary);
-            margin-bottom: 1rem;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 830;
+            line-height: 1.08;
+            letter-spacing: 0;
         }
-        
-        .feature-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+
+        .section-copy {
+            max-width: 620px;
+            color: var(--muted);
+            font-size: 1rem;
         }
-        
-        .feature-desc {
-            color: var(--text-light);
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-top: 42px;
         }
-        
-        footer {
-            padding: 2rem 0;
-            border-top: 1px solid var(--border);
+
+        .stat-card {
+            padding: 22px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.78);
+        }
+
+        .stat-card strong {
+            display: block;
+            color: var(--primary);
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .stat-card span {
+            display: block;
+            margin-top: 9px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 650;
+        }
+
+        .carousel {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .carousel-track {
+            display: flex;
+            width: 200%;
+            animation: carousel 14s infinite ease-in-out;
+        }
+
+        .slide {
+            display: grid;
+            grid-template-columns: 0.72fr 1.28fr;
+            width: 50%;
+            min-height: 500px;
+        }
+
+        .slide-copy {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 34px;
+            border-right: 1px solid var(--border);
+            background: linear-gradient(180deg, #ffffff, #f7fbfa);
+        }
+
+        .slide-copy h3 {
+            color: var(--primary);
+            font-size: 1.7rem;
+            line-height: 1.12;
+        }
+
+        .slide-copy p {
+            margin-top: 14px;
+            color: var(--muted);
+        }
+
+        .slide-tag {
+            display: inline-flex;
+            width: fit-content;
+            margin-bottom: 16px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            color: var(--teal);
+            background: #ecfdf5;
+            font-size: 0.75rem;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .slide-meta {
+            display: grid;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 650;
+        }
+
+        .slide-media {
+            position: relative;
+            display: grid;
+            min-height: 500px;
+            place-items: center;
+            padding: 22px;
+            background:
+                linear-gradient(90deg, rgba(30, 58, 95, 0.04) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(30, 58, 95, 0.04) 1px, transparent 1px),
+                #fbfcfd;
+            background-size: 28px 28px;
+        }
+
+        .slide-media img {
+            display: block;
+            width: 100%;
+            max-height: 456px;
+            object-fit: contain;
+            border: 1px solid rgba(221, 227, 234, 0.9);
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .asset-note {
+            display: none;
+            max-width: 460px;
+            padding: 26px;
+            border: 1px dashed rgba(15, 118, 110, 0.36);
+            border-radius: 8px;
+            color: var(--muted);
+            background: rgba(236, 253, 245, 0.72);
             text-align: center;
-            color: var(--text-light);
-            font-size: 0.875rem;
+        }
+
+        .slide-media.missing .asset-note {
+            display: block;
+        }
+
+        @keyframes carousel {
+            0%, 42% { transform: translateX(0); }
+            50%, 92% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .capability-card,
+        .workflow-step,
+        .use-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .capability-card {
+            padding: 24px;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .capability-card:hover {
+            border-color: rgba(15, 118, 110, 0.32);
+            box-shadow: 0 18px 42px rgba(17, 24, 39, 0.08);
+            transform: translateY(-3px);
+        }
+
+        .card-icon {
+            display: grid;
+            width: 42px;
+            height: 42px;
+            margin-bottom: 18px;
+            place-items: center;
+            border-radius: 8px;
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--primary), var(--teal));
+            font-size: 1rem;
+        }
+
+        .capability-card h3,
+        .use-card h3 {
+            color: var(--primary);
+            font-size: 1.12rem;
+            line-height: 1.25;
+        }
+
+        .capability-card p,
+        .use-card p,
+        .workflow-step p {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .workflow {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .workflow-step {
+            position: relative;
+            padding: 22px;
+        }
+
+        .workflow-step small {
+            color: var(--teal);
+            font-size: 0.76rem;
+            font-weight: 850;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .workflow-step h3 {
+            margin-top: 12px;
+            color: var(--primary);
+            font-size: 1.05rem;
+        }
+
+        .module-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .module-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 13px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.74);
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 750;
+        }
+
+        .module-pill span {
+            color: var(--teal);
+            font-size: 0.74rem;
+            font-weight: 850;
+            text-transform: uppercase;
+        }
+
+        .use-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .use-card {
+            padding: 22px;
+            min-height: 172px;
+        }
+
+        .roadmap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .roadmap-card {
+            padding: 28px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .roadmap-card h3 {
+            color: var(--primary);
+            font-size: 1.24rem;
+        }
+
+        .roadmap-card ul {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+            padding-left: 18px;
+            color: var(--muted);
+        }
+
+        .contact-band {
+            overflow: hidden;
+            border: 1px solid rgba(15, 118, 110, 0.18);
+            border-radius: 8px;
+            background:
+                radial-gradient(circle at top right, rgba(6, 182, 212, 0.15), transparent 24rem),
+                linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+        }
+
+        .contact-inner {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 24px;
+            padding: 34px;
+        }
+
+        .contact-inner h2 {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+        }
+
+        .contact-inner p {
+            max-width: 710px;
+            margin-top: 12px;
+            color: var(--muted);
+        }
+
+        footer {
+            padding: 34px 0;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            text-align: center;
+            font-size: 0.88rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 12px;
+        }
+
+        .footer-links a {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        @media (max-width: 980px) {
+            .hero-grid,
+            .slide,
+            .contact-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .slide-copy {
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .stat-row,
+            .workflow,
+            .use-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .capability-grid,
+            .module-list {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                width: min(100% - 28px, 1180px);
+            }
+
+            .hero {
+                padding-top: 58px;
+            }
+
+            .hero-grid {
+                gap: 34px;
+            }
+
+            .hero-actions,
+            .nav-actions {
+                width: 100%;
+            }
+
+            .nav {
+                flex-wrap: wrap;
+                padding: 14px 0;
+            }
+
+            .btn {
+                flex: 1;
+            }
+
+            .dashboard-main,
+            .stat-row,
+            .capability-grid,
+            .workflow,
+            .module-list,
+            .use-grid,
+            .roadmap {
+                grid-template-columns: 1fr;
+            }
+
+            .slide-media,
+            .slide {
+                min-height: auto;
+            }
+
+            .carousel-track {
+                width: 200%;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
+    <header class="site-header">
         <div class="container">
-            <nav>
-                <a href="/" class="logo">OmniMedAI</a>
-                <div style="display: flex; align-items: center;">
-                    <div class="nav-links">
-                        <a href="#features">Features</a>
-                        <a href="#about">About</a>
-                        <a href="#contact">Contact</a>
-                        <a href="#" class="btn">Get Started</a>
-                    </div>
+            <nav class="nav">
+                <a href="/" class="brand" aria-label="OmniMedAI home">
+                    <span class="brand-mark" aria-hidden="true"></span>
+                    <span>OmniMedAI</span>
+                </a>
+                <div class="nav-links">
+                    <a href="#workflow">Workflow</a>
+                    <a href="#modules">Modules</a>
+                    <a href="#applications">Applications</a>
+                    <a href="#roadmap">Roadmap</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="nav-actions">
+                    <a class="icon-link" href="https://github.com/OminiMedAI/OmniMedAI" target="_blank" title="GitHub" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a class="icon-link" href="mailto:omnimai@foxmail.com" title="Contact Email" aria-label="Contact Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a class="btn" href="#contact">Request Demo</a>
                 </div>
             </nav>
         </div>
     </header>
-    
+
     <main>
         <section class="hero">
-            <div class="container">
-                <h1>Precision Medicine Powered by Multimodal AI</h1>
-                <p>OmniMedAI integrates radiomics, deep learning, pathology analysis, and genomics to transform medical decision-making from experience-driven to AI+data-driven.</p>
-                <div style="margin: -2rem 2rem -0.1rem 2rem; font-size: 28px; font-weight: 500;">
-                    <a href="https://github.com/OminiMedAI/OmniMedAI" target="_blank" style="color: var(--text-light); margin-right: 1rem;">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="mailto:omnimai@foxmail.com" style="color: var(--text-light);">
-                        <i class="fas fa-envelope"></i>
-                    </a>
+            <div class="container hero-grid">
+                <div>
+                    <div class="eyebrow"><span class="eyebrow-dot"></span> Multimodal Medical AI Platform</div>
+                    <h1>Multimodal AI for Precision Medicine</h1>
+                    <p class="hero-copy">
+                        OmniMedAI connects imaging, pathology, clinical data, radiomics,
+                        habitat modeling, multimodal fusion, machine learning, and clinical
+                        evaluation into a modular research-grade platform.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn" href="#workflow">Explore Workflow</a>
+                        <a class="btn secondary" href="https://github.com/OminiMedAI/OmniMedAI" target="_blank">View GitHub</a>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-card">
+                            <strong>9</strong>
+                            <span>Platform modules</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong>4+</strong>
+                            <span>Medical data types</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong>AI</strong>
+                            <span>Modeling workflow</span>
+                        </div>
+                        <div class="stat-card">
+                            <strong>QC</strong>
+                            <span>Validation focused</span>
+                        </div>
+                    </div>
                 </div>
-                <a href="#" class="btn">Request Demo</a>
+
+                <div class="hero-panel" aria-label="OmniMedAI dashboard preview">
+                    <div class="dashboard-shell">
+                        <div class="dashboard-bar">
+                            <span>OmniMedAI Clinical Research Console</span>
+                            <span class="status-pill">Case Ready</span>
+                        </div>
+                        <div class="dashboard-main">
+                            <div class="scan-card">
+                                <div class="scan-frame"></div>
+                                <div class="scan-caption">
+                                    <span>MRI / CT ROI Review</span>
+                                    <span>Mask QC 0.94</span>
+                                </div>
+                            </div>
+                            <div class="panel-stack">
+                                <div class="metric-card">
+                                    <div class="metric-label">Risk Stratification</div>
+                                    <div class="metric-value">0.82</div>
+                                    <div class="bars">
+                                        <div class="bar"><span style="width: 82%"></span></div>
+                                        <div class="bar"><span style="width: 64%"></span></div>
+                                        <div class="bar"><span style="width: 48%"></span></div>
+                                    </div>
+                                </div>
+                                <div class="micro-grid">
+                                    <div class="micro-card">
+                                        <strong>1,500+</strong>
+                                        <span>Radiomics features</span>
+                                    </div>
+                                    <div class="micro-card">
+                                        <strong>WSI</strong>
+                                        <span>Pathology analysis</span>
+                                    </div>
+                                    <div class="micro-card">
+                                        <strong>AUC</strong>
+                                        <span>Model evaluation</span>
+                                    </div>
+                                    <div class="micro-card">
+                                        <strong>MIL</strong>
+                                        <span>Fusion roadmap</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-        
-        <section class="features" id="features">
+
+        <section class="section alt" id="workflow">
             <div class="container">
-                <h2 class="section-title">Platform Capabilities</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🖥️</div>
-                        <h3 class="feature-title">Multimodal Data Integration</h3>
-                        <p class="feature-desc">Seamlessly combine imaging, genomic, pathology and clinical data for comprehensive patient analysis.</p>
+                <div class="section-head">
+                    <div>
+                        <div class="section-kicker">Visual Workflow</div>
+                        <h2>From raw medical data to validated AI insight.</h2>
                     </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🧠</div>
-                        <h3 class="feature-title">Advanced AI Algorithms</h3>
-                        <p class="feature-desc">Proprietary deep learning models trained on diverse medical datasets for superior performance.</p>
+                    <p class="section-copy">
+                        Explore how OmniMedAI organizes multimodal medical data, feature
+                        engineering, model development, validation, and clinical translation
+                        into a connected research workflow.
+                    </p>
+                </div>
+
+                <div class="carousel" aria-label="OmniMedAI workflow diagram carousel">
+                    <div class="carousel-track">
+                        <article class="slide">
+                            <div class="slide-copy">
+                                <div>
+                                    <span class="slide-tag">End-to-End Flow</span>
+                                    <h3>OmniMedAI Platform Workflow</h3>
+                                    <p>
+                                        A complete medical AI workflow from data ingestion and preprocessing
+                                        to modeling, interpretation, reporting, and multi-center collaboration.
+                                    </p>
+                                </div>
+                                <div class="slide-meta">
+                                    <span>Data ingestion to clinical translation</span>
+                                    <span>Designed for reproducible multimodal medical AI studies</span>
+                                </div>
+                            </div>
+                            <div class="slide-media">
+                                <img src="assets/omnimedai-platform-workflow.png" alt="OmniMedAI end-to-end platform workflow" onerror="this.closest('.slide-media').classList.add('missing'); this.remove();">
+                                <div class="asset-note">Platform workflow visualization for the OmniMedAI end-to-end medical AI pipeline.</div>
+                            </div>
+                        </article>
+
+                        <article class="slide">
+                            <div class="slide-copy">
+                                <div>
+                                    <span class="slide-tag">Module Map</span>
+                                    <h3>OmniMedAI Modular Workflow Map</h3>
+                                    <p>
+                                        A module-level view showing how preprocessing, radiomics, segmentation,
+                                        pathology, habitat, fusion, modeling, and evaluation work together.
+                                    </p>
+                                </div>
+                                <div class="slide-meta">
+                                    <span>Module-level workflow architecture</span>
+                                    <span>Reusable components for imaging, pathology, fusion, modeling, and evaluation</span>
+                                </div>
+                            </div>
+                            <div class="slide-media">
+                                <img src="assets/omnimedai-module-workflow-map.png" alt="OmniMedAI modular workflow map" onerror="this.closest('.slide-media').classList.add('missing'); this.remove();">
+                                <div class="asset-note">Module workflow visualization for the OmniMedAI architecture.</div>
+                            </div>
+                        </article>
                     </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">📊</div>
-                        <h3 class="feature-title">Prognostic Analytics</h3>
-                        <p class="feature-desc">Accurate survival analysis and disease progression prediction powered by machine learning.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="modules">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <div class="section-kicker">Platform Modules</div>
+                        <h2>A modular SDK for translational medical AI.</h2>
                     </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">💊</div>
-                        <h3 class="feature-title">Personalized Therapy</h3>
-                        <p class="feature-desc">Treatment recommendations tailored to individual patient characteristics and biomarker profiles.</p>
+                    <p class="section-copy">
+                        Each module can be used independently or chained into a full multimodal
+                        modeling workflow for clinical research and AI validation.
+                    </p>
+                </div>
+
+                <div class="capability-grid">
+                    <article class="capability-card">
+                        <div class="card-icon"><i class="fas fa-database"></i></div>
+                        <h3>Data Processing</h3>
+                        <p>Convert DICOM/NIfTI, normalize images, resample volumes, and prepare ROI data for feature extraction.</p>
+                    </article>
+                    <article class="capability-card">
+                        <div class="card-icon"><i class="fas fa-wave-square"></i></div>
+                        <h3>Radiomics</h3>
+                        <p>Extract reproducible first-order, texture, and shape features from image-mask pairs with PyRadiomics.</p>
+                    </article>
+                    <article class="capability-card">
+                        <div class="card-icon"><i class="fas fa-crop-alt"></i></div>
+                        <h3>Segmentation</h3>
+                        <p>Route cases through 2D or 3D ROI segmentation workflows and post-process mask outputs.</p>
+                    </article>
+                    <article class="capability-card">
+                        <div class="card-icon"><i class="fas fa-microscope"></i></div>
+                        <h3>Pathology AI</h3>
+                        <p>Extract classical image features and deep pathology representations for WSI-driven research.</p>
+                    </article>
+                    <article class="capability-card">
+                        <div class="card-icon"><i class="fas fa-project-diagram"></i></div>
+                        <h3>Habitat Analysis</h3>
+                        <p>Compute local radiomics, cluster tumor subregions, and characterize intratumoral heterogeneity.</p>
+                    </article>
+                    <article class="capability-card">
+                        <div class="card-icon"><i class="fas fa-brain"></i></div>
+                        <h3>Modeling and Evaluation</h3>
+                        <p>Fuse multimodal features, train baseline models, and summarize predictive performance.</p>
+                    </article>
+                </div>
+
+                <div class="module-list" aria-label="OmniMedAI module list">
+                    <div class="module-pill">onem_process <span>preprocess</span></div>
+                    <div class="module-pill">onem_radiomics <span>features</span></div>
+                    <div class="module-pill">onem_segment <span>ROI</span></div>
+                    <div class="module-pill">onem_path <span>pathology</span></div>
+                    <div class="module-pill">onem_habitat <span>heterogeneity</span></div>
+                    <div class="module-pill">onem_torch <span>deep AI</span></div>
+                    <div class="module-pill">onem_fusion <span>fusion</span></div>
+                    <div class="module-pill">onem_modeling <span>modeling</span></div>
+                    <div class="module-pill">onem_eval <span>validation</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section alt">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <div class="section-kicker">Research Pipeline</div>
+                        <h2>Designed for reproducible clinical AI studies.</h2>
                     </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🔄</div>
-                        <h3 class="feature-title">Modular Architecture</h3>
-                        <p class="feature-desc">Flexible platform design allows easy integration with hospital systems and research workflows.</p>
+                    <p class="section-copy">
+                        OmniMedAI organizes medical AI development into auditable stages:
+                        preprocessing, feature engineering, modeling, validation, and translation.
+                    </p>
+                </div>
+                <div class="workflow">
+                    <article class="workflow-step">
+                        <small>01</small>
+                        <h3>Prepare Cohorts</h3>
+                        <p>Standardize images, masks, pathology slides, clinical tables, and patient identifiers.</p>
+                    </article>
+                    <article class="workflow-step">
+                        <small>02</small>
+                        <h3>Extract Features</h3>
+                        <p>Generate radiomics, pathomics, habitat, and deep features with documented settings.</p>
+                    </article>
+                    <article class="workflow-step">
+                        <small>03</small>
+                        <h3>Build Models</h3>
+                        <p>Fuse modalities, train baseline models, and preserve modeling-ready feature tables.</p>
+                    </article>
+                    <article class="workflow-step">
+                        <small>04</small>
+                        <h3>Validate Evidence</h3>
+                        <p>Report AUC, F1, calibration, external validation, interpretation, and clinical utility.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="applications">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <div class="section-kicker">Applications</div>
+                        <h2>Built around real medical AI research needs.</h2>
                     </div>
-                    
-                    <div class="feature-card">
-                        <div class="feature-icon">🔬</div>
-                        <h3 class="feature-title">Research Tools</h3>
-                        <p class="feature-desc">Comprehensive suite for medical researchers to develop and validate new AI models.</p>
+                    <p class="section-copy">
+                        The platform is intended for translational research, biomarker discovery,
+                        clinical prediction modeling, and multi-center validation.
+                    </p>
+                </div>
+                <div class="use-grid">
+                    <article class="use-card">
+                        <h3>Oncology Imaging</h3>
+                        <p>MRI/CT radiomics for molecular status prediction, lymph node risk, and treatment response studies.</p>
+                    </article>
+                    <article class="use-card">
+                        <h3>Digital Pathology</h3>
+                        <p>Feature extraction and deep representations for histology-driven model development.</p>
+                    </article>
+                    <article class="use-card">
+                        <h3>Habitat Biomarkers</h3>
+                        <p>Intratumoral heterogeneity mapping through local features and clustering-based subregions.</p>
+                    </article>
+                    <article class="use-card">
+                        <h3>Clinical Translation</h3>
+                        <p>Evaluation workflows for external validation, reporting, and privacy-preserving collaboration.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section alt" id="roadmap">
+            <div class="container">
+                <div class="section-head">
+                    <div>
+                        <div class="section-kicker">Roadmap</div>
+                        <h2>From modular toolkit to clinical AI operating layer.</h2>
+                    </div>
+                    <p class="section-copy">
+                        Current work focuses on stabilizing the SDK foundation while extending
+                        modeling, evaluation, and collaboration capabilities.
+                    </p>
+                </div>
+                <div class="roadmap">
+                    <article class="roadmap-card">
+                        <h3>Near Term</h3>
+                        <ul>
+                            <li>Unified dependency management and reproducible demos.</li>
+                            <li>Stable CLI entry points for common radiomics and modeling workflows.</li>
+                            <li>Cross-validation, feature selection, calibration, and confidence intervals.</li>
+                            <li>Improved documentation for pretrained segmentation weights.</li>
+                        </ul>
+                    </article>
+                    <article class="roadmap-card">
+                        <h3>Platform Extensions</h3>
+                        <ul>
+                            <li>Clinical table processing and genomic feature ingestion.</li>
+                            <li>Survival modeling, MIL fusion, and attention-based multimodal fusion.</li>
+                            <li>Experiment tracking, model versioning, and report generation.</li>
+                            <li>Federated learning and privacy-preserving multi-center validation.</li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="contact">
+            <div class="container">
+                <div class="contact-band">
+                    <div class="contact-inner">
+                        <div>
+                            <div class="section-kicker">Contact</div>
+                            <h2>Build validated medical AI workflows with OmniMedAI.</h2>
+                            <p>
+                                For professional or collaboration inquiries, contact the OmniMedAI team.
+                                The GitHub repository and email channel are kept unchanged for continuity.
+                            </p>
+                        </div>
+                        <div class="hero-actions">
+                            <a class="btn" href="mailto:omnimai@foxmail.com">Contact Email</a>
+                            <a class="btn secondary" href="https://github.com/OminiMedAI/OmniMedAI" target="_blank">GitHub</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
-    
+
     <footer>
         <div class="container">
             <p>© 2023 OmniMedAI Platform. All rights reserved.</p>
-            <p>Developed with ❤️ by our research team</p>
+            <p>Developed with love by our research team</p>
+            <div class="footer-links">
+                <a href="https://github.com/OminiMedAI/OmniMedAI" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                <a href="mailto:omnimai@foxmail.com"><i class="fas fa-envelope"></i> omnimai@foxmail.com</a>
+            </div>
         </div>
     </footer>
 </body>

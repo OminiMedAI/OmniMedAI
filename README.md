@@ -13,7 +13,7 @@ large-scale clinical deployment, genomic pipelines, and full model governance,
 are planned or integration-level features rather than complete out-of-the-box
 modules.
 
-![OmniMedAI platform overview](./platform.jpg)
+![OmniMedAI platform overview](./platform-m-fusion-p.png)
 
 ## Platform Scope
 
@@ -29,6 +29,17 @@ Data ingestion
   -> Evaluation and interpretation
   -> Reporting and collaboration
 ```
+
+## Workflow Diagrams
+
+Recommended image filenames:
+
+- `docs/assets/omnimedai-platform-workflow.png`: overall platform workflow.
+- `docs/assets/omnimedai-module-workflow-map.png`: module-level workflow map.
+
+![OmniMedAI end-to-end platform workflow](./docs/assets/omnimedai-platform-workflow.png)
+
+![OmniMedAI modular workflow map](./docs/assets/omnimedai-module-workflow-map.png)
 
 ## Current Modules
 
