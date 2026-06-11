@@ -479,14 +479,14 @@
 
         .carousel-track {
             display: flex;
-            width: 200%;
-            animation: carousel 14s infinite ease-in-out;
+            width: 500%;
+            animation: carousel 35s infinite ease-in-out;
         }
 
         .slide {
             display: grid;
             grid-template-columns: 0.72fr 1.28fr;
-            width: 50%;
+            width: 20%;
             min-height: 500px;
         }
 
@@ -571,8 +571,11 @@
         }
 
         @keyframes carousel {
-            0%, 42% { transform: translateX(0); }
-            50%, 92% { transform: translateX(-50%); }
+            0%, 16% { transform: translateX(0); }
+            20%, 36% { transform: translateX(-20%); }
+            40%, 56% { transform: translateX(-40%); }
+            60%, 76% { transform: translateX(-60%); }
+            80%, 96% { transform: translateX(-80%); }
             100% { transform: translateX(0); }
         }
 
@@ -836,7 +839,7 @@
             }
 
             .carousel-track {
-                width: 200%;
+                width: 500%;
             }
         }
     </style>
@@ -1008,6 +1011,72 @@
                             <div class="slide-media">
                                 <img src="assets/omnimedai-module-workflow-map.png" alt="OmniMedAI modular workflow map" onerror="this.closest('.slide-media').classList.add('missing'); this.remove();">
                                 <div class="asset-note">Module workflow visualization for the OmniMedAI architecture.</div>
+                            </div>
+                        </article>
+
+                        <article class="slide">
+                            <div class="slide-copy">
+                                <div>
+                                    <span class="slide-tag">Clinical AI</span>
+                                    <h3>AI-Assisted Diagnosis Review</h3>
+                                    <p>
+                                        A clinical decision-support scenario where multimodal evidence,
+                                        imaging review, pathology context, and risk modeling are presented
+                                        together for expert interpretation.
+                                    </p>
+                                </div>
+                                <div class="slide-meta">
+                                    <span>Clinical review with AI-generated evidence panels</span>
+                                    <span>Designed for expert-in-the-loop diagnostic and prognostic workflows</span>
+                                </div>
+                            </div>
+                            <div class="slide-media">
+                                <img src="assets/omnimedai-ai-clinical-diagnosis.png" alt="OmniMedAI AI-assisted clinical diagnosis scene" onerror="this.closest('.slide-media').classList.add('missing'); this.remove();">
+                                <div class="asset-note">AI-assisted clinical diagnosis visualization for OmniMedAI.</div>
+                            </div>
+                        </article>
+
+                        <article class="slide">
+                            <div class="slide-copy">
+                                <div>
+                                    <span class="slide-tag">Multimodal Analysis</span>
+                                    <h3>Precision Medicine Research Workstation</h3>
+                                    <p>
+                                        A research workstation view for combining radiology, pathology,
+                                        clinical tables, genomic markers, model outputs, and interpretability
+                                        results in a single analysis environment.
+                                    </p>
+                                </div>
+                                <div class="slide-meta">
+                                    <span>Radiology, pathology, clinical, and genomic context</span>
+                                    <span>Built for reproducible biomarker discovery and cohort studies</span>
+                                </div>
+                            </div>
+                            <div class="slide-media">
+                                <img src="assets/omnimedai-multimodal-ai-workstation.png" alt="OmniMedAI multimodal AI research workstation" onerror="this.closest('.slide-media').classList.add('missing'); this.remove();">
+                                <div class="asset-note">Multimodal research workstation visualization for OmniMedAI.</div>
+                            </div>
+                        </article>
+
+                        <article class="slide">
+                            <div class="slide-copy">
+                                <div>
+                                    <span class="slide-tag">Validation</span>
+                                    <h3>Validation & Clinical Translation</h3>
+                                    <p>
+                                        A validation workflow connecting cohort definition, model development,
+                                        internal testing, external validation, clinical utility, interpretation,
+                                        and translation-ready reporting.
+                                    </p>
+                                </div>
+                                <div class="slide-meta">
+                                    <span>Internal validation to multi-center external testing</span>
+                                    <span>Evidence packaging for clinical AI translation</span>
+                                </div>
+                            </div>
+                            <div class="slide-media">
+                                <img src="assets/omnimedai-validation-translation-workflow.png" alt="OmniMedAI validation and clinical translation workflow" onerror="this.closest('.slide-media').classList.add('missing'); this.remove();">
+                                <div class="asset-note">Validation and clinical translation workflow visualization for OmniMedAI.</div>
                             </div>
                         </article>
                     </div>
