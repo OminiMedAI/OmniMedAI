@@ -4,6 +4,7 @@ __pycache__
 *.pyd
 *.whl
 .pytest_cache/
+.venv*/
 build/
 dist/
 *.egg-info/

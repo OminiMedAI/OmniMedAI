@@ -37,6 +37,16 @@ class ProcessingConfig:
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> 'ProcessingConfig':
         """从字典创建配置"""
+        config_dict = config_dict.copy()
+        for field_name in (
+            'resample_spacing',
+            'crop_center_size',
+            'pad_to_shape',
+            'roi_padding',
+        ):
+            value = config_dict.get(field_name)
+            if value is not None:
+                config_dict[field_name] = tuple(value)
         return cls(**config_dict)
     
     def save(self, file_path: Union[str, Path]) -> None:
@@ -73,6 +83,7 @@ class ConversionConfig:
     file_extensions: list = None
     
     # 输出配置
+    output_format: str = 'nii.gz'
     overwrite_existing: bool = False
     create_backup: bool = True
     backup_suffix: str = '.backup'

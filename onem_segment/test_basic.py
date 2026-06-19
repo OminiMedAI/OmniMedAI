@@ -307,7 +307,7 @@ class TestPreprocessing(unittest.TestCase):
         clipped = clip_intensity(test_data, (20, 80))
         
         # Values should be clipped
-        self.assertLessEqual(np.max(clipped), test_data[3])  # Should clip the 100
+        self.assertAlmostEqual(np.max(clipped), np.percentile(test_data, 80))
 
 
 class TestROISegmenter(unittest.TestCase):
@@ -331,7 +331,10 @@ class TestROISegmenter(unittest.TestCase):
             else:
                 segmenter = ROISegmenter()
                 self.assertIsNotNone(segmenter.image_analyzer)
-                self.assertIsNotNone(segmenter.model_manager)
+                if TORCH_AVAILABLE:
+                    self.assertIsNotNone(segmenter.model_manager)
+                else:
+                    self.assertIsNone(segmenter.model_manager)
                 
         except ImportError as e:
             # Expected if dependencies are missing

@@ -71,7 +71,10 @@ class ROISegmenter:
             raise ImportError("File utilities not available")
         
         # Initialize components
-        self.model_manager = ModelManager()
+        try:
+            self.model_manager = ModelManager()
+        except ImportError:
+            self.model_manager = None
         self.image_analyzer = ImageDimensionAnalyzer()
         
         # Model mapping for different scenarios
@@ -242,6 +245,8 @@ class ROISegmenter:
     
     def _ensure_model_loaded(self, model_name: str, model_type: str) -> bool:
         """Ensure that the required model is loaded."""
+        if self.model_manager is None:
+            self.model_manager = ModelManager()
         if model_name in self.model_manager.list_loaded_models():
             return True
         
@@ -408,12 +413,14 @@ class ROISegmenter:
         seg = result['segmentation']
         analysis = result.get('analysis', {})
         
+        centroid = self._calculate_centroid(seg)
         stats = {
             'roi_volume_voxels': int(np.sum(seg > 0)),
             'roi_percentage': float(np.sum(seg > 0) / seg.size * 100),
             'roi_shape': seg.shape,
             'roi_slices': self._count_roi_slices(seg),
-            'roi_centroid': self._calculate_centroid(seg),
+            'roi_centroid': centroid,
+            'centroid': centroid,
             'bounding_box': self._calculate_bounding_box(seg)
         }
         

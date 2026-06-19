@@ -53,7 +53,6 @@ class ModelManager:
         """
         self.model_dir = model_dir
         self.loaded_models = {}
-        self.device = self._setup_device(device)
         self.logger = logging.getLogger(__name__)
         
         # Check dependencies
@@ -61,6 +60,7 @@ class ModelManager:
             raise ImportError("PyTorch is required. Install with: pip install torch")
         if not NIBABEL_AVAILABLE:
             raise ImportError("nibabel is required. Install with: pip install nibabel")
+        self.device = self._setup_device(device)
     
     def _setup_device(self, device: str) -> str:
         """Setup computation device."""

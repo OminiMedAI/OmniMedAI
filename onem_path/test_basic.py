@@ -353,7 +353,7 @@ class TestCellProfilerExtractor(unittest.TestCase):
             # Test extraction with modules
             modules = ['morphological', 'intensity']
             result = extractor.extract_features(
-                image_path="mock_path.png",
+                image_path=__file__,
                 modules=modules
             )
             
@@ -364,7 +364,7 @@ class TestCellProfilerExtractor(unittest.TestCase):
             
             # Check that requested modules were processed
             for module in modules:
-                self.assertIn(f'module_{module}', result['module_results'])
+                self.assertIn(module, result['module_results'])
                 
         except Exception as e:
             self.fail(f"Feature extraction pipeline failed: {e}")
@@ -377,6 +377,8 @@ class TestTITANExtractor(unittest.TestCase):
     """Test TITAN feature extractor."""
     
     def setUp(self):
+        if not TORCH_AVAILABLE:
+            self.skipTest("PyTorch not available")
         from onem_path.extractors.titan_extractor import TITANExtractor
         
         # Create test config

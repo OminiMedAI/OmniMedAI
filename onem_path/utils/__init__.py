@@ -19,12 +19,16 @@ from .cellprofiler_utils import (
     parse_cellprofiler_output, convert_cellprofiler_to_standard_format,
     create_cellprofiler_batch_script
 )
-from .titan_utils import (
-    load_titan_model, extract_titan_features, preprocess_for_titan,
-    create_titan_transforms, extract_layer_features,
-    benchmark_titan_extraction, get_available_backbones,
-    validate_titan_model, save_titan_model
-)
+try:
+    from .titan_utils import (
+        load_titan_model, extract_titan_features, preprocess_for_titan,
+        create_titan_transforms, extract_layer_features,
+        benchmark_titan_extraction, get_available_backbones,
+        validate_titan_model, save_titan_model
+    )
+    TITAN_UTILS_AVAILABLE = True
+except ImportError:
+    TITAN_UTILS_AVAILABLE = False
 
 __all__ = [
     # File utilities
@@ -60,14 +64,17 @@ __all__ = [
     'convert_cellprofiler_to_standard_format',
     'create_cellprofiler_batch_script',
     
-    # TITAN utilities
-    'load_titan_model',
-    'extract_titan_features',
-    'preprocess_for_titan',
-    'create_titan_transforms',
-    'extract_layer_features',
-    'benchmark_titan_extraction',
-    'get_available_backbones',
-    'validate_titan_model',
-    'save_titan_model'
 ]
+
+if TITAN_UTILS_AVAILABLE:
+    __all__.extend([
+        'load_titan_model',
+        'extract_titan_features',
+        'preprocess_for_titan',
+        'create_titan_transforms',
+        'extract_layer_features',
+        'benchmark_titan_extraction',
+        'get_available_backbones',
+        'validate_titan_model',
+        'save_titan_model',
+    ])

@@ -204,11 +204,15 @@ def create_binary_mask(image_data: np.ndarray,
                       connectivity: int = 1) -> np.ndarray:
     """创建二值掩码"""
     if threshold == 'otsu':
-        import cv2
-        # 将图像归一化到 0-255
-        normalized = ((image_data - image_data.min()) / (image_data.max() - image_data.min()) * 255).astype(np.uint8)
-        _, binary = cv2.threshold(normalized, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        mask = binary.astype(bool)
+        from skimage.filters import threshold_otsu
+
+        finite_values = image_data[np.isfinite(image_data)]
+        if finite_values.size == 0:
+            raise ValueError("image_data contains no finite values")
+        if finite_values.min() == finite_values.max():
+            mask = np.zeros_like(image_data, dtype=bool)
+        else:
+            mask = image_data > threshold_otsu(finite_values)
     elif threshold == 'mean':
         mask = image_data > np.mean(image_data)
     elif threshold == 'median':

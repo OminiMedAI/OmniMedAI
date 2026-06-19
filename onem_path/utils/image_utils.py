@@ -164,6 +164,26 @@ def convert_color_space(image: np.ndarray, target_space: str) -> np.ndarray:
         return image
 
 
+def extract_nuclei_features(image: np.ndarray) -> dict:
+    """Extract basic nuclei count and area measurements."""
+    if not SKIMAGE_AVAILABLE:
+        raise ImportError("scikit-image is required for nuclei feature extraction")
+
+    grayscale = color.rgb2gray(image) if image.ndim == 3 else image.astype(float)
+    threshold = filters.threshold_otsu(grayscale)
+    labels = measure.label(grayscale < threshold)
+    areas = np.asarray(
+        [region.area for region in measure.regionprops(labels)],
+        dtype=float,
+    )
+    return {
+        'nuclei_count': int(areas.size),
+        'nuclei_area_mean': float(areas.mean()) if areas.size else 0.0,
+        'nuclei_area_std': float(areas.std()) if areas.size else 0.0,
+        'nuclei_area_total': float(areas.sum()) if areas.size else 0.0,
+    }
+
+
 def normalize_staining(image: np.ndarray, method: str = 'reinhard') -> np.ndarray:
     """
     Normalize staining in pathology images.

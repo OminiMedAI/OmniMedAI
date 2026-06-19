@@ -174,6 +174,13 @@ class ImageProcessor:
         self.logger.info(f"Cropped {image_path} from {original_shape} to {cropped_data.shape}")
         
         return output_path
+
+    def crop_image(self,
+                   image_path: str,
+                   crop_size: Tuple[int, int, int],
+                   output_path: str) -> str:
+        """Crop the center of an image using the public compatibility API."""
+        return self.crop_center(image_path, crop_size, output_path)
     
     def pad_image(self, 
                   image_path: str, 
