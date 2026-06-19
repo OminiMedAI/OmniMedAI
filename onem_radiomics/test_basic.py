@@ -43,6 +43,7 @@ class TestRadiomicsConfig(unittest.TestCase):
         self.assertEqual(len(self.config.feature_types), 6)
         self.assertIn('firstorder', self.config.feature_types)
         self.assertIn('glcm', self.config.feature_types)
+        self.assertEqual(self.config.image_types, {'Original': {}})
     
     def test_config_validation(self):
         """Test configuration validation."""
@@ -96,6 +97,10 @@ class TestRadiomicsConfig(unittest.TestCase):
             self.assertIsInstance(preset_config.bin_width, int)
             self.assertGreater(preset_config.bin_width, 0)
             self.assertIsInstance(preset_config.feature_types, list)
+
+        research = PRESET_CONFIGS['research']
+        self.assertIn('Wavelet', research.image_types)
+        self.assertEqual(research.image_types['LoG']['sigma'][-1], 5.0)
 
 
 class TestFileUtilities(unittest.TestCase):
@@ -221,6 +226,23 @@ class TestRadiomicsUtilities(unittest.TestCase):
         
         self.assertEqual(stats['n_samples'], 100)
         self.assertEqual(stats['n_features'], 10)
+
+    def test_calculate_icc_dependency_or_result(self):
+        """Test ICC utility when pandas is available."""
+        try:
+            import pandas as pd
+        except ImportError:
+            self.skipTest("pandas not available")
+
+        from onem_radiomics import calculate_icc
+
+        table = pd.DataFrame({
+            "patient_id": ["p1", "p1", "p2", "p2", "p3", "p3"],
+            "repeat_id": ["a", "b", "a", "b", "a", "b"],
+            "feature": [1.0, 1.1, 2.0, 2.1, 3.0, 3.1],
+        })
+        result = calculate_icc(table)
+        self.assertGreater(result.loc[0, "icc"], 0.75)
     
     def test_find_constant_features(self):
         """Test constant feature detection."""

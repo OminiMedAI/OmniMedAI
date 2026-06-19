@@ -1,0 +1,2 @@
+patient_id,treatment,tsr_score,response,best_change_percent,age,performance_status,tumor_burden
+example_001,1,0.71,1,-35.0,62,1,42.0

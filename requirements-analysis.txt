@@ -1,0 +1,22 @@
+# Core table and model analysis
+numpy
+pandas
+scikit-learn
+xgboost
+shap
+
+# Statistical and visualization workflows
+matplotlib
+statsmodels
+lifelines
+scikit-image
+scipy
+
+# Medical image and radiomics workflows
+nibabel
+SimpleITK
+pyradiomics
+neuroCombat
+
+# Optional time-dependent survival ROC support
+scikit-survival

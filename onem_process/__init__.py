@@ -10,8 +10,14 @@ onem_process - 医学图像处理模块
 from .converters import *
 from .processors import *
 from .utils import *
+from .reconstruction import (
+    InterpolationReconstructor,
+    ReconstructionConfig,
+    ReconstructionResult,
+    TorchSuperResolutionAdapter,
+)
 
-__VERSION__ = '1.0.0'
+__VERSION__ = '1.12.1'
 
 __all__ = [
     'DicomToNiftiConverter',
@@ -19,5 +25,12 @@ __all__ = [
     'ROIProcessor',
     'ImageProcessor',
     'file_utils',
-    'medical_utils'
+    'medical_utils',
+    'check_stage_size_consistency',
+    'compare_image_pairs',
+    'compare_image_quality',
+    'InterpolationReconstructor',
+    'ReconstructionConfig',
+    'ReconstructionResult',
+    'TorchSuperResolutionAdapter'
 ]

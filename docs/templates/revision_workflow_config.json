@@ -1,0 +1,109 @@
+{
+  "output_dir": "results/revision_analysis",
+  "modeling": {
+    "enabled": false,
+    "input_csv": "data/model_input.csv",
+    "patient_column": "patient_id",
+    "label_column": "label",
+    "config": {
+      "task": "classification",
+      "model_type": "logistic_regression",
+      "feature_selection": "radiomics_sequence",
+      "n_features": 20,
+      "outer_folds": 5,
+      "inner_folds": 4,
+      "scoring": "roc_auc",
+      "random_state": 2026,
+      "selection_parameters": {
+        "univariate_p_threshold": 0.05,
+        "correlation_threshold": 0.9,
+        "lasso_cv_folds": 5
+      }
+    }
+  },
+  "classification_evaluation": {
+    "enabled": false,
+    "n_bootstraps": 2000,
+    "n_bins": 10,
+    "random_state": 2026
+  },
+  "survival": {
+    "enabled": false,
+    "input_csv": "data/survival.csv",
+    "patient_column": "patient_id",
+    "duration_column": "time_months",
+    "event_column": "event",
+    "group_column": "tsr_group",
+    "time_points": [0, 6, 12, 18, 24],
+    "covariates": ["tsr_score", "age", "stage"],
+    "categorical_covariates": ["stage"]
+  },
+  "treatment": {
+    "enabled": false,
+    "input_csv": "data/treatment.csv",
+    "patient_column": "patient_id",
+    "change_column": "best_change_percent",
+    "group_column": "tsr_group",
+    "save_plot": true,
+    "interaction": {
+      "outcome_column": "response",
+      "treatment_column": "treatment",
+      "biomarker_column": "tsr_score",
+      "covariates": ["age", "performance_status", "tumor_burden"]
+    },
+    "propensity": {
+      "treatment_column": "treatment",
+      "covariates": ["age", "performance_status", "tumor_burden"],
+      "estimand": "ate"
+    }
+  },
+  "image_quality": {
+    "enabled": false,
+    "manifest_csv": "data/image_pairs.csv",
+    "patient_column": "patient_id",
+    "reference_column": "reference_path",
+    "reconstructed_column": "reconstructed_path",
+    "roi_column": "roi_path",
+    "background_column": "background_path"
+  },
+  "radiomics": {
+    "enabled": false,
+    "input_csv": "data/radiomics_repeats.csv",
+    "patient_column": "patient_id",
+    "repeat_column": "repeat_id",
+    "batch_column": "center",
+    "icc_type": "icc2_1",
+    "combat": {
+      "enabled": false,
+      "categorical_covariates": ["sex"],
+      "continuous_covariates": ["age"]
+    }
+  },
+  "pathology": {
+    "enabled": false,
+    "input_csv": "data/pathology_tsr.csv",
+    "patient_column": "patient_id",
+    "reader_column": "reader_id",
+    "slide_column": "slide_id",
+    "tsr_column": "tsr_percent",
+    "specimen_column": "specimen_type",
+    "cutoff": 50.0
+  },
+  "omics": {
+    "enabled": false,
+    "expression_csv": "data/bulk_expression.csv",
+    "sample_metadata_csv": "data/omics_sample_metadata.csv",
+    "cell_metadata_csv": "data/single_cell_metadata.csv",
+    "accession_manifest_csv": "data/omics_accessions.csv",
+    "sample_column": "sample_id",
+    "gene_column": "gene_id",
+    "group_column": "tsr_group",
+    "cell_type_column": "cell_type",
+    "mecaf_label": "meCAF",
+    "qc_columns": {
+      "total_reads": "total_reads",
+      "mapped_reads": "mapped_reads",
+      "detected_genes": "detected_genes"
+    }
+  }
+}

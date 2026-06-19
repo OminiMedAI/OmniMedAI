@@ -24,7 +24,10 @@ class ModelingConfig:
     def validate(self):
         if self.task not in {"classification", "regression"}:
             raise ValueError("task must be 'classification' or 'regression'")
-        if self.model_type not in {"random_forest", "svm", "logistic_regression", "linear_regression"}:
+        if self.model_type not in {
+            "random_forest", "svm", "logistic_regression",
+            "linear_regression", "xgboost"
+        }:
             raise ValueError("unsupported model_type")
         if not 0 < self.test_size < 1:
             raise ValueError("test_size must be between 0 and 1")

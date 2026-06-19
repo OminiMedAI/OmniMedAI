@@ -8,12 +8,17 @@ with configurable parameters and batch processing capabilities.
 
 from .extractors.radiomics_extractor import RadiomicsExtractor
 from .config.settings import RadiomicsConfig, PRESET_CONFIGS
+from .utils.radiomics_utils import calculate_icc
+from .harmonization import batch_effect_summary, combat_harmonize
 
-__version__ = "1.0.0"
+__version__ = "1.12.1"
 __author__ = "OmniMedAI Team"
 
 __all__ = [
     'RadiomicsExtractor',
     'RadiomicsConfig',
-    'PRESET_CONFIGS'
+    'PRESET_CONFIGS',
+    'batch_effect_summary',
+    'calculate_icc',
+    'combat_harmonize'
 ]

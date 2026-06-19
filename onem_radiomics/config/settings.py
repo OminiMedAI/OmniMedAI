@@ -27,6 +27,12 @@ class RadiomicsConfig:
     feature_types: List[str] = field(default_factory=lambda: [
         'firstorder', 'glcm', 'glrlm', 'glszm', 'gldm', 'ngtdm'
     ])
+
+    # PyRadiomics image filters. Keys are image type names accepted by
+    # PyRadiomics and values are optional per-filter settings.
+    image_types: Dict[str, Dict[str, Any]] = field(
+        default_factory=lambda: {'Original': {}}
+    )
     
     # Weighting parameters for voxel-based features
     weight_center: Optional[Tuple[float, float, float]] = None
@@ -62,6 +68,25 @@ class RadiomicsConfig:
             if feature_type not in valid_features:
                 raise ValueError(f"Invalid feature type: {feature_type}. "
                                f"Valid options: {valid_features}")
+
+        valid_image_types = {
+            'Original', 'Wavelet', 'LoG', 'Square', 'SquareRoot',
+            'Logarithm', 'Exponential', 'Gradient', 'LBP2D', 'LBP3D'
+        }
+        if not self.image_types:
+            raise ValueError("image_types must contain at least one image type")
+        invalid_image_types = set(self.image_types).difference(valid_image_types)
+        if invalid_image_types:
+            raise ValueError(
+                f"Invalid image types: {sorted(invalid_image_types)}. "
+                f"Valid options: {sorted(valid_image_types)}"
+            )
+        log_settings = self.image_types.get('LoG', {})
+        sigma = log_settings.get('sigma')
+        if sigma is not None and (
+            not isinstance(sigma, (list, tuple)) or any(value <= 0 for value in sigma)
+        ):
+            raise ValueError("LoG sigma must be a list of positive values")
         
         # Validate bin width
         if self.bin_width <= 0:
@@ -105,6 +130,7 @@ class RadiomicsConfig:
             'normalize': self.normalize,
             'normalize_scale': self.normalize_scale,
             'feature_types': self.feature_types,
+            'image_types': self.image_types,
             'weight_center': self.weight_center,
             'weight_radius': self.weight_radius,
             'n_jobs': self.n_jobs,
@@ -142,6 +168,11 @@ PRESET_CONFIGS = {
     
     'comprehensive': RadiomicsConfig(
         feature_types=['firstorder', 'glcm', 'glrlm', 'glszm', 'gldm', 'ngtdm', 'shape'],
+        image_types={
+            'Original': {},
+            'Wavelet': {},
+            'LoG': {'sigma': [1.0, 2.0, 3.0, 4.0, 5.0]},
+        },
         bin_width=16,
         normalize=True,
         verbose=True
@@ -217,6 +248,11 @@ PRESET_CONFIGS = {
     
     'research': RadiomicsConfig(
         feature_types=['firstorder', 'glcm', 'glrlm', 'glszm', 'gldm', 'ngtdm', 'shape'],
+        image_types={
+            'Original': {},
+            'Wavelet': {},
+            'LoG': {'sigma': [1.0, 2.0, 3.0, 4.0, 5.0]},
+        },
         bin_width=12,
         resampled_pixel_spacing=(1.0, 1.0, 1.0),
         interpolator='sitkBSpline',

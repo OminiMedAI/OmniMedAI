@@ -26,6 +26,16 @@ Medical image processing module featuring DICOM to NIfTI format conversion, batc
 - **Configuration Import/Export**: Save and load configuration files
 - **Preset Templates**: Provide commonly used configuration templates
 
+### 5. Clinical Table Validation
+- **Consistency Checks**: Flag configurable stage and tumor-size
+  contradictions before modeling or reporting
+
+### 6. Super-Resolution Reconstruction
+- **Interpolation Baselines**: Nearest, linear, cubic, and Lanczos upsampling
+- **Deep Model Adapter**: Caller-supplied PyTorch architecture and checkpoint
+- **NIfTI Provenance**: Preserve geometry and record scale, spacing, algorithm,
+  checkpoint, and parameters
+
 ## Installation
 
 ```bash
@@ -178,6 +188,18 @@ config_manager.update_processing_config(
 
 # Export configuration
 config_manager.export_configs("output/configs")
+```
+
+### 8. Clinical Table Consistency
+
+```python
+from onem_process import check_stage_size_consistency
+
+issues = check_stage_size_consistency(
+    clinical_table,
+    stage_column="t_stage",
+    diameter_column="tumor_diameter_cm",
+)
 ```
 
 ## Directory Structure

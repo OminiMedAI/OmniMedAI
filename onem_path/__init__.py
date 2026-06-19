@@ -1,21 +1,37 @@
-"""
-onem_path - Pathology Image Feature Extraction Module
+"""Pathology image extraction and tumor-stroma ratio utilities."""
 
-This module provides comprehensive pathology image feature extraction capabilities,
-including traditional pathology radiomics using CellProfiler and deep transfer 
-learning feature extraction using TITAN model.
-"""
-
-from .extractors.cellprofiler_extractor import CellProfilerExtractor
-from .extractors.titan_extractor import TITANExtractor
 from .config.settings import PathologyConfig, PRESET_CONFIGS
+from .tsr import (
+    aggregate_tsr_ground_truth,
+    compare_specimen_tsr,
+    tsr_group_agreement,
+    tsr_interobserver_icc,
+    validate_tsr_table,
+)
 
-__version__ = "1.0.0"
+__version__ = "1.12.1"
 __author__ = "OmniMedAI Team"
 
 __all__ = [
     'CellProfilerExtractor',
     'TITANExtractor', 
     'PathologyConfig',
-    'PRESET_CONFIGS'
+    'PRESET_CONFIGS',
+    'aggregate_tsr_ground_truth',
+    'compare_specimen_tsr',
+    'tsr_group_agreement',
+    'tsr_interobserver_icc',
+    'validate_tsr_table',
 ]
+
+
+def __getattr__(name):
+    if name == "CellProfilerExtractor":
+        from .extractors.cellprofiler_extractor import CellProfilerExtractor
+
+        return CellProfilerExtractor
+    if name == "TITANExtractor":
+        from .extractors.titan_extractor import TITANExtractor
+
+        return TITANExtractor
+    raise AttributeError(name)

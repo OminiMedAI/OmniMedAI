@@ -1,0 +1,2 @@
+patient_id,label,center,scanner,clinical_age,clinical_ca199,mri_feature_001,srmri_feature_001
+example_001,0,center_a,scanner_a,62,150.0,0.12,0.18

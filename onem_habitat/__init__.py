@@ -12,7 +12,7 @@ from .clustering import *
 from .segmentation import *
 from .utils import *
 
-__VERSION__ = '1.0.0'
+__VERSION__ = '1.12.1'
 
 __all__ = [
     'LocalRadiomicsExtractor',

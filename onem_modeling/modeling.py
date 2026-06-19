@@ -97,6 +97,72 @@ class TabularModeler:
             raise RuntimeError("Model has not been fitted")
         return self.pipeline.predict(df[self.feature_columns])
 
+    def predict_proba(self, df):
+        if self.pipeline is None:
+            raise RuntimeError("Model has not been fitted")
+        if not hasattr(self.pipeline, "predict_proba"):
+            raise RuntimeError("The fitted model does not provide probabilities")
+        return self.pipeline.predict_proba(df[self.feature_columns])
+
+    def fit_external_validation(
+        self,
+        train_df,
+        validation_df,
+        label_column: str,
+        id_columns: Optional[List[str]] = None,
+    ):
+        """Fit on one cohort and evaluate without refitting on an external cohort."""
+        id_columns = id_columns or ["patient_id", "image_path", "mask_path"]
+        drop_columns = [label_column] + [c for c in id_columns if c in train_df.columns]
+        self.feature_columns = [c for c in train_df.columns if c not in drop_columns]
+        missing = sorted(set(self.feature_columns).difference(validation_df.columns))
+        if missing:
+            raise ValueError(f"Validation cohort is missing features: {missing}")
+        self.pipeline = self._build_pipeline()
+        self.pipeline.fit(train_df[self.feature_columns], train_df[label_column])
+        predictions = self.pipeline.predict(validation_df[self.feature_columns])
+        probabilities = (
+            self.pipeline.predict_proba(validation_df[self.feature_columns])
+            if hasattr(self.pipeline, "predict_proba")
+            else None
+        )
+        return {
+            "model": self.pipeline,
+            "feature_columns": list(self.feature_columns),
+            "y_validation": validation_df[label_column],
+            "predictions": predictions,
+            "probabilities": probabilities,
+        }
+
+    def save(self, path: str):
+        """Persist the fitted pipeline and feature schema."""
+        if self.pipeline is None:
+            raise RuntimeError("Model has not been fitted")
+        try:
+            import joblib
+        except ImportError as exc:
+            raise ImportError("Model persistence requires joblib") from exc
+        payload = {
+            "pipeline": self.pipeline,
+            "feature_columns": self.feature_columns,
+            "config": self.config.to_dict(),
+        }
+        joblib.dump(payload, path)
+        return path
+
+    @classmethod
+    def load(cls, path: str):
+        """Load a model saved by :meth:`save`."""
+        try:
+            import joblib
+        except ImportError as exc:
+            raise ImportError("Model persistence requires joblib") from exc
+        payload = joblib.load(path)
+        instance = cls(ModelingConfig(**payload["config"]))
+        instance.pipeline = payload["pipeline"]
+        instance.feature_columns = payload["feature_columns"]
+        return instance
+
     def _build_pipeline(self):
         deps = _require_dependencies()
         Pipeline = deps["Pipeline"]
@@ -112,6 +178,23 @@ class TabularModeler:
     def _create_model(self):
         deps = _require_dependencies()
         cfg = self.config
+        if cfg.model_type == "xgboost":
+            try:
+                from xgboost import XGBClassifier, XGBRegressor
+            except ImportError as exc:
+                raise ImportError(
+                    "XGBoost models require xgboost. Install with: pip install xgboost"
+                ) from exc
+            common = {
+                "n_estimators": 300,
+                "max_depth": 3,
+                "learning_rate": 0.05,
+                "subsample": 0.8,
+                "colsample_bytree": 0.8,
+                "random_state": cfg.random_state,
+                "n_jobs": 1,
+            }
+            return XGBClassifier(eval_metric="logloss", **common) if cfg.task == "classification" else XGBRegressor(**common)
 
         if cfg.task == "classification":
             if cfg.model_type == "random_forest":

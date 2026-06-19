@@ -1,0 +1,28 @@
+name: Python tests
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[test]"
+      - name: Compile
+        run: python -m compileall -q onem_process onem_segment onem_radiomics onem_modeling onem_eval onem_path onem_omics onem_start
+      - name: Test
+        run: python -m pytest
+      - name: Import safety
+        run: python -c "import radiomics_feature_extract, radiomics_2d_train, radiomics_3d_train, model_performance_analysis"

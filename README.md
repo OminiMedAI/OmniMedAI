@@ -46,9 +46,11 @@ Recommended image filenames:
 | Capability | Module | Status |
 |---|---|---|
 | Medical image preprocessing, DICOM/NIfTI conversion, ROI cropping | `onem_process` | Available |
+| Interpolation and pluggable deep-model super-resolution reconstruction | `onem_process.reconstruction` | Available |
 | Radiomics feature extraction from images and masks | `onem_radiomics` | Available |
 | Automatic ROI segmentation framework with 2D/3D model selection | `onem_segment` | Framework available; pretrained weights required for real inference |
 | Digital pathology feature extraction | `onem_path` | Available baseline; optional CellProfiler/TITAN dependencies |
+| Bulk/scRNA-seq QC, cell composition, and accession validation | `onem_omics` | Available analysis utilities |
 | Habitat and intratumoral heterogeneity analysis | `onem_habitat` | Available baseline |
 | Deep-learning model components | `onem_torch` | Available baseline |
 | Multimodal feature fusion | `onem_fusion` | Newly added baseline |
@@ -64,6 +66,8 @@ Recommended image filenames:
 - Normalize intensity values with Z-score, min-max, percentile, and windowing workflows.
 - Resample, crop, pad, and extract ROI volumes.
 - Batch-convert image/mask datasets for downstream modeling.
+- Reconstruct arrays or NIfTI volumes with interpolation baselines or
+  user-supplied PyTorch models while recording parameters and provenance.
 
 Primary module: `onem_process`
 
@@ -72,6 +76,7 @@ Primary module: `onem_process`
 - Analyze image dimensionality and slice characteristics.
 - Choose 2D or 3D segmentation workflows based on image structure.
 - Manage model loading, inference, post-processing, and NIfTI mask export.
+- Validate external manual masks and quantify Dice, Jaccard, HD95, and volume agreement.
 
 Primary module: `onem_segment`
 
@@ -82,6 +87,8 @@ requires compatible model definitions and pretrained weights.
 
 - Extract radiomics features with PyRadiomics, including first-order, texture,
   and shape features.
+- Enable Original, Wavelet, LoG, and other PyRadiomics image filters through
+  serializable configuration.
 - Extract pathology features from histology images with traditional image
   features and deep feature interfaces.
 - Compute local radiomics features and perform habitat clustering for
@@ -103,7 +110,11 @@ Primary module: `onem_fusion`
 ### 5. Modeling
 
 - Train baseline tabular models from extracted or fused features.
-- Support common classification and regression workflows.
+- Support common classification and regression workflows, including optional XGBoost.
+- Compose univariate filtering, correlation removal, mRMR, and LASSO inside
+  leakage-safe nested validation.
+- Save fitted models, infer independent external cohorts, and generate optional
+  SHAP feature summaries.
 - Provide a clean starting point for radiomics, clinical, and multimodal
   predictive modeling.
 
@@ -117,32 +128,37 @@ Primary module: `onem_modeling`
 
 Primary module: `onem_eval`
 
-Planned extensions include calibration curves, decision curve analysis,
-confidence intervals, SHAP summaries, Grad-CAM hooks, and clinical report
-generation.
+Advanced evaluation includes bootstrap AUC confidence intervals, calibration
+tables, decision-curve analysis, and machine-readable workflow manifests.
+Planned extensions include Grad-CAM hooks and clinical report generation.
+
+### Modular Research Design
+
+OmniMedAI provides reusable algorithms and validation components. Cohort
+assembly, endpoints, study-specific thresholds, final feature sets, and figure
+organization remain the responsibility of each research project.
 
 ## Installation
 
-The project is currently organized as local Python packages. A unified
-dependency file is planned. For now, install dependencies according to the
-workflow you need.
+OmniMedAI is packaged through `pyproject.toml`. Install only the capability
+groups required by your study.
 
 ### Minimal
 
 ```bash
-pip install numpy pandas scikit-learn
+pip install -e .
 ```
 
 ### Medical Imaging
 
 ```bash
-pip install nibabel pydicom SimpleITK scipy opencv-python scikit-image
+pip install -e ".[imaging]"
 ```
 
 ### Radiomics
 
 ```bash
-pip install pyradiomics
+pip install -e ".[radiomics]"
 ```
 
 ### Pathology
@@ -156,13 +172,13 @@ pip install cellprofiler
 ### Deep Learning
 
 ```bash
-pip install torch torchvision monai
+pip install -e ".[deep]"
 ```
 
-### Tutorials
+### Complete Analysis Environment
 
 ```bash
-pip install jupyter seaborn
+pip install -e ".[analysis]"
 ```
 
 ## Quick Start
@@ -227,6 +243,34 @@ metrics = ModelEvaluator(EvaluationConfig(task="classification")).evaluate(
 print(metrics["accuracy"])
 ```
 
+### Advanced Validation
+
+Advanced validation utilities include patient-level splitting, leakage checks,
+ICC, bootstrap confidence intervals, calibration, decision-curve analysis,
+survival analysis, treatment-effect sensitivity analysis, and
+machine-readable workflow manifests.
+
+See [`docs/actual_data_workflow.md`](./docs/actual_data_workflow.md) for
+advanced study validation examples and input schemas.
+
+### Super-Resolution Reconstruction
+
+```python
+from onem_process import InterpolationReconstructor, ReconstructionConfig
+
+reconstructor = InterpolationReconstructor(
+    ReconstructionConfig(
+        scale_factors=(2.0, 2.0, 1.0),
+        interpolation="cubic",
+    )
+)
+result = reconstructor.reconstruct_nifti(
+    "data/input.nii.gz",
+    "output/sr_input.nii.gz",
+)
+print(result.metadata)
+```
+
 ## Notebooks
 
 The `onem_start` folder contains guided notebooks:
@@ -237,16 +281,18 @@ The `onem_start` folder contains guided notebooks:
 - `03_Pathology_Analysis.ipynb`: pathology feature extraction.
 - `04_Comprehensive_Workflow.ipynb`: end-to-end multimodal workflow.
 
+For configuration-driven advanced study validation, use:
+
+```bash
+python -m onem_start.revision_analysis docs/templates/revision_workflow_config.json
+```
+
 ## Roadmap
 
 ### Near Term
 
-- Add a unified `requirements.txt` or `pyproject.toml`.
-- Convert root prototype scripts into stable CLI or module entry points.
 - Add lightweight test datasets and reproducible demo commands.
-- Expand `onem_modeling` with cross-validation and feature selection.
-- Expand `onem_eval` with calibration curves, decision curve analysis, and
-  confidence intervals.
+- Expand publication-ready report exporters and visualization helpers.
 
 ### Platform Extensions
 
@@ -368,3 +414,6 @@ citation.
 For professional or collaboration inquiries, please contact:
 
 - Email: <acezqy@gmail.com>
+
+For access to additional features and to try the premium version, please
+contact our development team at <onemai@foxmail.com>.

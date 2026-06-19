@@ -1,0 +1,2 @@
+patient_id,reader_id,slide_id,specimen_type,staining_method,tsr_percent
+example_001,reader_1,slide_1,resection,H&E,42.0

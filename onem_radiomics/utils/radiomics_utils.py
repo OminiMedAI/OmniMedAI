@@ -5,7 +5,7 @@ Radiomics utility functions
 import re
 import numpy as np
 import logging
-from typing import Dict, List, Set, Optional, Any
+from typing import Dict, List, Set, Optional, Any, Sequence
 
 # Try to import pyradiomics
 try:
@@ -47,6 +47,16 @@ def setup_radiomics_features(extractor, feature_types: List[str]):
             logging.warning(f"Unknown feature class: {feature_type}")
 
 
+def setup_radiomics_image_types(extractor, image_types: Dict[str, Dict[str, Any]]):
+    """Enable configured PyRadiomics image filters."""
+    if not RADIOMICS_AVAILABLE:
+        raise ImportError("pyradiomics is required. Install with: pip install pyradiomics")
+    extractor.disableAllImageTypes()
+    for image_type, settings in image_types.items():
+        extractor.enableImageTypeByName(image_type, customArgs=settings or {})
+        logging.info("Enabled image type: %s with settings %s", image_type, settings)
+
+
 def format_feature_names(feature_name: str) -> str:
     """
     Format radiomics feature names to be more readable and consistent.
@@ -57,41 +67,32 @@ def format_feature_names(feature_name: str) -> str:
     Returns:
         Formatted feature name
     """
-    # Replace underscores with spaces and capitalize
-    formatted = feature_name.replace('_', ' ').title()
-    
-    # Handle common abbreviations
     abbreviations = {
-        'Gldm': 'GLDM',
-        'Glcm': 'GLCM', 
-        'Glrlm': 'GLRLM',
-        'Glszm': 'GLSZM',
-        'Ngtdm': 'NGTDM',
-        'Id': 'ID',
-        'Idn': 'IDN',
-        'Idm': 'IDM',
-        'Ids': 'IDS',
-        'Sze': 'SZ',
-        'Lze': 'LZ',
-        'Hge': 'HG',
-        'Sre': 'SR',
-        'Lre': 'LR',
-        'Rpc': 'RPC',
-        'Ccs': 'CCS',
-        'Variance': 'Var',
-        'Std': 'StdDev'
+        "glcm": "GLCM",
+        "gldm": "GLDM",
+        "glrlm": "GLRLM",
+        "glszm": "GLSZM",
+        "ngtdm": "NGTDM",
+        "id": "ID",
+        "idn": "IDN",
+        "idm": "IDM",
+        "ids": "IDS",
     }
-    
-    for abbr, full in abbreviations.items():
-        formatted = re.sub(rf'\b{abbr}\b', full, formatted)
-    
-    # Replace spaces with underscores for CSV compatibility
-    formatted = formatted.replace(' ', '_')
-    
-    # Remove any remaining special characters except underscores
-    formatted = re.sub(r'[^a-zA-Z0-9_]', '', formatted)
-    
-    return formatted
+    formatted_parts = []
+    for part in feature_name.split("_"):
+        cleaned = re.sub(r"[^a-zA-Z0-9]", "", part)
+        if not cleaned:
+            continue
+        lowered = cleaned.lower()
+        if lowered in abbreviations:
+            formatted_parts.append(abbreviations[lowered])
+        elif cleaned.isupper():
+            formatted_parts.append(cleaned)
+        elif any(character.isupper() for character in cleaned[1:]):
+            formatted_parts.append(cleaned)
+        else:
+            formatted_parts.append(cleaned[:1].upper() + cleaned[1:].lower())
+    return "_".join(formatted_parts)
 
 
 def validate_features(features_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -338,3 +339,85 @@ def create_feature_selection_report(features_df, target_column: str = None) -> s
         report.append("")
     
     return "\n".join(report)
+
+
+def calculate_icc(
+    feature_table,
+    subject_column: str = "patient_id",
+    repeat_column: str = "repeat_id",
+    feature_columns: Optional[Sequence[str]] = None,
+    icc_type: str = "icc2_1",
+):
+    """Calculate per-feature ICC for repeated scans or segmentations."""
+    try:
+        import pandas as pd
+    except ImportError as exc:
+        raise ImportError("pandas is required for ICC analysis") from exc
+
+    if subject_column not in feature_table.columns:
+        raise ValueError(f"Missing subject column: {subject_column}")
+    if repeat_column not in feature_table.columns:
+        raise ValueError(f"Missing repeat column: {repeat_column}")
+    if icc_type not in {"icc2_1", "icc3_1"}:
+        raise ValueError("icc_type must be 'icc2_1' or 'icc3_1'")
+
+    if feature_columns is None:
+        excluded = {subject_column, repeat_column}
+        feature_columns = [
+            column
+            for column in feature_table.columns
+            if column not in excluded and pd.api.types.is_numeric_dtype(feature_table[column])
+        ]
+
+    rows = []
+    for feature in feature_columns:
+        pivot = feature_table.pivot_table(
+            index=subject_column,
+            columns=repeat_column,
+            values=feature,
+            aggfunc="mean",
+        ).dropna()
+        n_subjects, n_repeats = pivot.shape
+        if n_subjects < 2 or n_repeats < 2:
+            rows.append(
+                {
+                    "feature": feature,
+                    "icc": float("nan"),
+                    "n_subjects": int(n_subjects),
+                    "n_repeats": int(n_repeats),
+                    "status": "insufficient_repeats",
+                }
+            )
+            continue
+
+        values = np.asarray(pivot.values, dtype=float)
+        grand_mean = np.mean(values)
+        row_means = np.mean(values, axis=1)
+        column_means = np.mean(values, axis=0)
+        ss_rows = n_repeats * np.sum((row_means - grand_mean) ** 2)
+        ss_columns = n_subjects * np.sum((column_means - grand_mean) ** 2)
+        residuals = values - row_means[:, None] - column_means[None, :] + grand_mean
+        ss_error = np.sum(residuals ** 2)
+        ms_rows = ss_rows / (n_subjects - 1)
+        ms_columns = ss_columns / (n_repeats - 1)
+        ms_error = ss_error / ((n_subjects - 1) * (n_repeats - 1))
+
+        if icc_type == "icc3_1":
+            denominator = ms_rows + (n_repeats - 1) * ms_error
+        else:
+            denominator = (
+                ms_rows
+                + (n_repeats - 1) * ms_error
+                + n_repeats * (ms_columns - ms_error) / n_subjects
+            )
+        icc = float("nan") if denominator == 0 else float((ms_rows - ms_error) / denominator)
+        rows.append(
+            {
+                "feature": feature,
+                "icc": icc,
+                "n_subjects": int(n_subjects),
+                "n_repeats": int(n_repeats),
+                "status": "stable" if icc >= 0.75 else "review",
+            }
+        )
+    return pd.DataFrame(rows).sort_values("feature").reset_index(drop=True)

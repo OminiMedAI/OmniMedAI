@@ -38,7 +38,11 @@ except ImportError:
 
 from ..config.settings import RadiomicsConfig
 from ..utils.file_utils import load_image_mask_pair, get_matching_files, validate_file_paths
-from ..utils.radiomics_utils import setup_radiomics_features, format_feature_names
+from ..utils.radiomics_utils import (
+    setup_radiomics_features,
+    setup_radiomics_image_types,
+    format_feature_names,
+)
 
 
 class RadiomicsExtractor:
@@ -95,6 +99,7 @@ class RadiomicsExtractor:
         
         # Enable/disable feature classes
         setup_radiomics_features(self.extractor, self.config.feature_types)
+        setup_radiomics_image_types(self.extractor, self.config.image_types)
         
         # Apply custom settings
         for key, value in self.config.custom_settings.items():
@@ -150,6 +155,7 @@ class RadiomicsExtractor:
                 'features': formatted_features,
                 'metadata': {
                     'feature_types': self.config.feature_types,
+                    'image_types': self.config.image_types,
                     'bin_width': self.config.bin_width,
                     'resampled_pixel_spacing': self.config.resampled_pixel_spacing,
                     'image_shape': image.shape if hasattr(image, 'shape') else 'unknown',
@@ -289,6 +295,9 @@ class RadiomicsExtractor:
             f.write("Feature types used:\n")
             for feature_type in self.config.feature_types:
                 f.write(f"  - {feature_type}\n")
+            f.write("\nImage types used:\n")
+            for image_type, settings in self.config.image_types.items():
+                f.write(f"  - {image_type}: {settings}\n")
             
             f.write(f"\nExtraction parameters:\n")
             f.write(f"  - Bin width: {self.config.bin_width}\n")

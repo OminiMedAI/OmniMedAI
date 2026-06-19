@@ -1,0 +1,2 @@
+sample_id,patient_id,tsr_group,batch,total_reads,mapped_reads,detected_genes
+sample_001,example_001,H,run_1,50000000,47000000,18000

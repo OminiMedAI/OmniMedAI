@@ -1,0 +1,2 @@
+cell_id,sample_id,patient_id,tsr_group,batch,cell_type
+cell_001,sample_001,example_001,H,run_1,meCAF

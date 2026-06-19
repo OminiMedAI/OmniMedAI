@@ -1,0 +1,127 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnimedai"
+version = "1.12.1"
+description = "Modular medical AI utilities for imaging, radiomics, pathology, omics, modeling, and evaluation."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [
+  { name = "OmniMedAI Team", email = "onemai@foxmail.com" }
+]
+keywords = [
+  "medical-imaging",
+  "radiomics",
+  "pathology",
+  "omics",
+  "machine-learning",
+  "clinical-research"
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Medical Science Apps."
+]
+dependencies = [
+  "numpy>=1.23",
+  "pandas>=1.5",
+  "scipy>=1.9",
+  "scikit-learn>=1.2"
+]
+
+[project.optional-dependencies]
+imaging = [
+  "nibabel>=5.0",
+  "pydicom>=2.4",
+  "SimpleITK>=2.2",
+  "scikit-image>=0.20",
+  "opencv-python>=4.8"
+]
+radiomics = [
+  "nibabel>=5.0",
+  "pydicom>=2.4",
+  "SimpleITK>=2.2",
+  "scikit-image>=0.20",
+  "opencv-python>=4.8",
+  "pyradiomics>=3.0",
+  "neuroCombat>=0.2.12"
+]
+modeling = [
+  "xgboost>=1.7",
+  "shap>=0.42",
+  "statsmodels>=0.14"
+]
+survival = [
+  "lifelines>=0.27"
+]
+omics = [
+  "statsmodels>=0.14"
+]
+deep = [
+  "torch>=2.0",
+  "torchvision>=0.15",
+  "monai>=1.2"
+]
+analysis = [
+  "nibabel>=5.0",
+  "pydicom>=2.4",
+  "SimpleITK>=2.2",
+  "scikit-image>=0.20",
+  "opencv-python>=4.8",
+  "pyradiomics>=3.0",
+  "neuroCombat>=0.2.12",
+  "xgboost>=1.7",
+  "shap>=0.42",
+  "statsmodels>=0.14",
+  "lifelines>=0.27",
+  "matplotlib>=3.7"
+]
+test = [
+  "nibabel>=5.0",
+  "pydicom>=2.4",
+  "SimpleITK>=2.2",
+  "scikit-image>=0.20",
+  "opencv-python>=4.8",
+  "pytest>=7.4"
+]
+
+[project.scripts]
+omnimedai-revision-analysis = "onem_start.revision_analysis:main"
+omnimedai-radiomics-extract = "radiomics_feature_extract:main"
+omnimedai-model-evaluate = "model_performance_analysis:main"
+
+[tool.setuptools]
+py-modules = [
+  "radiomics_feature_extract",
+  "model_performance_analysis",
+  "radiomics_2d_train",
+  "radiomics_3d_train"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["omnimedai*", "onem_*"]
+namespaces = true
+
+[tool.pytest.ini_options]
+testpaths = [
+  "omnimedai",
+  "onem_process",
+  "onem_segment",
+  "onem_radiomics",
+  "onem_modeling",
+  "onem_eval",
+  "onem_path",
+  "onem_omics"
+]
+python_files = ["test_*.py"]
+addopts = "-ra"

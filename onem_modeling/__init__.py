@@ -7,12 +7,28 @@ and prediction export.
 """
 
 from .modeling import ModelingConfig, TabularModeler, train_tabular_model
+from .cross_validation import NestedCVConfig, nested_patient_cross_validate
+from .validation import (
+    assert_no_patient_overlap,
+    patient_level_train_test_split,
+    summarize_feature_selection_stability,
+)
+from .feature_selection import FeatureSelectionConfig, SequentialRadiomicsSelector
+from .explain import shap_feature_summary
 
-__version__ = "1.0.0"
+__version__ = "1.12.1"
 __author__ = "OmniMedAI Team"
 
 __all__ = [
     "ModelingConfig",
+    "NestedCVConfig",
+    "FeatureSelectionConfig",
+    "SequentialRadiomicsSelector",
     "TabularModeler",
+    "assert_no_patient_overlap",
+    "patient_level_train_test_split",
+    "nested_patient_cross_validate",
+    "summarize_feature_selection_stability",
+    "shap_feature_summary",
     "train_tabular_model",
 ]

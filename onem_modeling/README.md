@@ -9,6 +9,13 @@ features into baseline machine-learning models for research workflows.
 - Automatically split train/test data.
 - Apply median imputation and optional feature scaling.
 - Support random forest, SVM, logistic regression, and linear regression.
+- Support optional XGBoost classification and regression.
+- Split datasets at patient level and detect overlap between cohorts.
+- Summarize feature-selection stability across random seeds.
+- Compose univariate, correlation, mRMR, and LASSO selection stages.
+- Run the complete selection sequence inside nested cross-validation.
+- Fit on a development cohort, infer an external cohort, and persist models.
+- Generate optional SHAP feature summaries.
 - Export predictions and probabilities for downstream evaluation.
 
 ## Quick Start
@@ -30,6 +37,27 @@ model = result["model"]
 y_test = result["y_test"]
 y_pred = result["predictions"]
 y_proba = result["probabilities"]
+```
+
+```python
+from onem_modeling import (
+    assert_no_patient_overlap,
+    patient_level_train_test_split,
+    summarize_feature_selection_stability,
+)
+
+train_df, test_df, split_summary = patient_level_train_test_split(
+    feature_table,
+    patient_col="patient_id",
+    label_col="label",
+    random_state=2026,
+)
+assert_no_patient_overlap(train_df, test_df)
+
+stability = summarize_feature_selection_stability({
+    1: ["feature_a", "feature_b"],
+    2: ["feature_a", "feature_b", "feature_c"],
+})
 ```
 
 ## Status

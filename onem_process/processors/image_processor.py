@@ -2,6 +2,8 @@
 图像处理器
 """
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Tuple, Union

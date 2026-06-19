@@ -2,6 +2,8 @@
 DICOM 到 NIfTI 格式转换器
 """
 
+from __future__ import annotations
+
 import os
 import logging
 from pathlib import Path

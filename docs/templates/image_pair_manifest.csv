@@ -1,0 +1,2 @@
+patient_id,reference_path,reconstructed_path,roi_path,background_path,center,scanner
+example_001,data/reference/example_001.nii.gz,data/reconstructed/example_001.nii.gz,data/masks/example_001_roi.nii.gz,data/masks/example_001_background.nii.gz,center_a,scanner_a

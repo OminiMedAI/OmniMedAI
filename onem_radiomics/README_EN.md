@@ -28,6 +28,12 @@ Medical Imaging Radiomics Feature Extraction Module - Extract comprehensive radi
 - **Configuration Saving**: Save and load configuration parameters
 - **Parameter Validation**: Automatic parameter validity checking
 
+### 5. Feature Reliability
+- **ICC Analysis**: Measure agreement across repeated scans, readers,
+  segmentations, or devices
+- **Filtered Images**: Enable Original, Wavelet, LoG, Gradient, and other
+  PyRadiomics image types through `RadiomicsConfig.image_types`
+
 ## Installation
 
 ```bash
@@ -145,6 +151,19 @@ print(f"Number of highly correlated feature pairs: {len(high_corr_pairs)}")
 report = create_feature_selection_report(df)
 with open("feature_analysis_report.txt", "w") as f:
     f.write(report)
+```
+
+### 6. Repeated-Measurement Reliability
+
+```python
+from onem_radiomics import calculate_icc
+
+icc_table = calculate_icc(
+    repeated_features,
+    subject_column="patient_id",
+    repeat_column="reader_id",
+)
+stable_features = icc_table[icc_table["icc"] >= 0.75]
 ```
 
 ## Directory Structure
