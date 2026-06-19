@@ -525,7 +525,7 @@ config = {
 
 For the professional version, please contact:
 - **WeChat**: AcePwn
-- **Email**: acezqy@gmail.com
+- **Email**: onemai@foxmail.com
 
 ## License
 

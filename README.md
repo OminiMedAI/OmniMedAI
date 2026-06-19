@@ -413,7 +413,4 @@ citation.
 
 For professional or collaboration inquiries, please contact:
 
-- Email: <acezqy@gmail.com>
-
-For access to additional features and to try the premium version, please
-contact our development team at <onemai@foxmail.com>.
+- Email: <onemai@foxmail.com>

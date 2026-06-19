@@ -312,7 +312,7 @@ print(get_preset_config('default'))
 For advanced features, professional support, and enterprise deployments:
 
 - **WeChat**: AcePwn
-- **Email**: acezqy@gmail.com
+- **Email**: onemai@foxmail.com
 
 ---
 

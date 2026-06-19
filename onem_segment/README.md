@@ -514,7 +514,7 @@ config.interpolation_method = 'bilinear'  # 选择插值方法
 
 专业版，请联系：
 - **微信**: AcePwn
-- **邮箱**: acezqy@gmail.com
+- **邮箱**: onemai@foxmail.com
 
 ## 许可证
 
