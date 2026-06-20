@@ -32,11 +32,6 @@ Data ingestion
 
 ## Workflow Diagrams
 
-Recommended image filenames:
-
-- `docs/assets/omnimedai-platform-workflow.png`: overall platform workflow.
-- `docs/assets/omnimedai-module-workflow-map.png`: module-level workflow map.
-
 ![OmniMedAI end-to-end platform workflow](./docs/assets/omnimedai-platform-workflow.png)
 
 ![OmniMedAI modular workflow map](./docs/assets/omnimedai-module-workflow-map.png)
@@ -330,9 +325,6 @@ biomarkers, pathology AI, and privacy-preserving learning.
 - Fudan University, China: multimodal data fusion and computational pathology.
 - Zhongshan Hospital, Fudan University, China: clinical research design,
   cohort validation, and translational evaluation.
-- Bengbu Medical College, China: medical AI workflow development and education.
-- The First Affiliated Hospital of Bengbu Medical College, China: clinical
-  scenario validation and dataset curation.
 - Southeast University, China: medical image analysis and AI algorithm
   optimization.
 - Zhejiang Provincial People's Hospital, China: oncology dataset curation and
@@ -347,12 +339,18 @@ biomarkers, pathology AI, and privacy-preserving learning.
   AI workflows.
 - CETC 41st Research Institute, China: precision medical device research and
   development.
-- Jiangsu Provincial People's Hospital, China: clinical data validation and
-  chronic disease research.
 - Xidian University, China: communication technologies and embedded systems
   integration.
 - Tongji Hospital, Wuhan, China: large-scale clinical cohort studies and
   therapeutic evaluation.
+- The Second Affiliated Hospital of Zhejiang University School of Medicine,
+  China: clinical collaboration, oncology imaging research, and translational
+  medical AI validation.
+- The First Affiliated Hospital of Bengbu Medical College, China: clinical
+  scenario validation and dataset curation.
+- Bengbu Medical College, China: medical AI workflow development and education.
+- Jiangsu Provincial People's Hospital, China: clinical data validation and
+  chronic disease research.
 
 ### International Partners
 
