@@ -29,5 +29,27 @@ class TestInterpolationReconstruction(unittest.TestCase):
         self.assertEqual(result.metadata["scale_factors"], [2, 3])
 
 
+class TestReconstructionRegistry(unittest.TestCase):
+    def test_lists_common_super_resolution_algorithms(self):
+        from onem_process import list_reconstruction_algorithms
+
+        algorithms = list_reconstruction_algorithms()
+        for name in ["srgan", "rdgan", "swin2sr", "hat", "custom_torch"]:
+            self.assertIn(name, algorithms)
+
+    def test_srgan_4x_mri_preset_records_public_parameters(self):
+        from onem_process import srgan_4x_mri_config
+
+        config = srgan_4x_mri_config(
+            checkpoint_path="restricted/srgan_generator.pt",
+            batch_size=16,
+        )
+        self.assertEqual(config.algorithm, "srgan")
+        self.assertEqual(config.scale_factors, (4.0, 4.0, 1.0))
+        self.assertEqual(config.batch_size, 16)
+        self.assertEqual(config.model_parameters["mode"], "slice_wise")
+        self.assertEqual(config.model_parameters["normalization"], "z_score")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -12,9 +12,16 @@ from .processors import *
 from .utils import *
 from .reconstruction import (
     InterpolationReconstructor,
+    RECONSTRUCTION_PRESETS,
+    ReconstructionAlgorithmSpec,
     ReconstructionConfig,
     ReconstructionResult,
     TorchSuperResolutionAdapter,
+    create_reconstruction_config,
+    get_reconstruction_algorithm,
+    list_reconstruction_algorithms,
+    register_reconstruction_algorithm,
+    srgan_4x_mri_config,
 )
 
 __VERSION__ = '1.12.1'
@@ -30,7 +37,14 @@ __all__ = [
     'compare_image_pairs',
     'compare_image_quality',
     'InterpolationReconstructor',
+    'RECONSTRUCTION_PRESETS',
+    'ReconstructionAlgorithmSpec',
     'ReconstructionConfig',
     'ReconstructionResult',
-    'TorchSuperResolutionAdapter'
+    'TorchSuperResolutionAdapter',
+    'create_reconstruction_config',
+    'get_reconstruction_algorithm',
+    'list_reconstruction_algorithms',
+    'register_reconstruction_algorithm',
+    'srgan_4x_mri_config'
 ]

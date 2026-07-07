@@ -251,7 +251,14 @@ advanced study validation examples and input schemas.
 ### Super-Resolution Reconstruction
 
 ```python
-from onem_process import InterpolationReconstructor, ReconstructionConfig
+from onem_process import (
+    InterpolationReconstructor,
+    ReconstructionConfig,
+    list_reconstruction_algorithms,
+    srgan_4x_mri_config,
+)
+
+print(list_reconstruction_algorithms().keys())
 
 reconstructor = InterpolationReconstructor(
     ReconstructionConfig(
@@ -264,6 +271,24 @@ result = reconstructor.reconstruct_nifti(
     "output/sr_input.nii.gz",
 )
 print(result.metadata)
+```
+
+The reconstruction module also exposes a PyTorch adapter and algorithm registry
+for user-supplied deep super-resolution models, including common CNN-, GAN-, and
+Transformer-based families such as SRCNN, EDSR, RDN, RCAN, SRGAN, ESRGAN, RDGAN,
+SwinIR, Swin2SR, and HAT. Study-specific model weights are not bundled with the
+community repository; users provide checkpoints through `checkpoint_path`.
+
+```python
+from onem_process import TorchSuperResolutionAdapter, srgan_4x_mri_config
+
+config = srgan_4x_mri_config(
+    checkpoint_path="path/to/srgan_generator.pt",
+    batch_size=16,
+)
+adapter = TorchSuperResolutionAdapter(model=my_srgan_generator, config=config)
+result = adapter.reconstruct_nifti("data/input.nii.gz", "output/sr_input.nii.gz")
+print(result.metadata["parameters"])
 ```
 
 ## Notebooks

@@ -59,10 +59,12 @@ class TorchSuperResolutionAdapter:
         return ReconstructionResult(
             image=reconstructed,
             metadata={
-                "algorithm": self.model.__class__.__name__,
+                "algorithm": self.config.algorithm,
+                "model_class": self.model.__class__.__name__,
                 "input_shape": list(array.shape),
                 "output_shape": list(reconstructed.shape),
                 "scale_factors": list(self.config.scale_factors),
+                "batch_size": self.config.batch_size,
                 "checkpoint_path": self.config.checkpoint_path,
                 "parameters": self.config.to_dict(),
             },
