@@ -9,10 +9,17 @@ def _require_dependencies():
     try:
         import pandas as pd
         from sklearn.compose import ColumnTransformer
-        from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+        from sklearn.ensemble import (
+            ExtraTreesClassifier,
+            ExtraTreesRegressor,
+            RandomForestClassifier,
+            RandomForestRegressor,
+        )
         from sklearn.impute import SimpleImputer
         from sklearn.linear_model import LinearRegression, LogisticRegression
         from sklearn.model_selection import train_test_split
+        from sklearn.naive_bayes import GaussianNB
+        from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
         from sklearn.pipeline import Pipeline
         from sklearn.preprocessing import StandardScaler
         from sklearn.svm import SVC, SVR
@@ -25,6 +32,11 @@ def _require_dependencies():
     return {
         "pd": pd,
         "ColumnTransformer": ColumnTransformer,
+        "ExtraTreesClassifier": ExtraTreesClassifier,
+        "ExtraTreesRegressor": ExtraTreesRegressor,
+        "GaussianNB": GaussianNB,
+        "KNeighborsClassifier": KNeighborsClassifier,
+        "KNeighborsRegressor": KNeighborsRegressor,
         "RandomForestClassifier": RandomForestClassifier,
         "RandomForestRegressor": RandomForestRegressor,
         "SimpleImputer": SimpleImputer,
@@ -203,8 +215,19 @@ class TabularModeler:
                     random_state=cfg.random_state,
                     class_weight=cfg.class_weight,
                 )
+            if cfg.model_type == "extra_trees":
+                return deps["ExtraTreesClassifier"](
+                    n_estimators=200,
+                    random_state=cfg.random_state,
+                    class_weight=cfg.class_weight,
+                    n_jobs=1,
+                )
             if cfg.model_type == "svm":
                 return deps["SVC"](probability=True, class_weight=cfg.class_weight)
+            if cfg.model_type == "knn":
+                return deps["KNeighborsClassifier"]()
+            if cfg.model_type == "naive_bayes":
+                return deps["GaussianNB"]()
             if cfg.model_type == "logistic_regression":
                 return deps["LogisticRegression"](
                     max_iter=1000,
@@ -217,8 +240,16 @@ class TabularModeler:
                 n_estimators=200,
                 random_state=cfg.random_state,
             )
+        if cfg.model_type == "extra_trees":
+            return deps["ExtraTreesRegressor"](
+                n_estimators=200,
+                random_state=cfg.random_state,
+                n_jobs=1,
+            )
         if cfg.model_type == "svm":
             return deps["SVR"]()
+        if cfg.model_type == "knn":
+            return deps["KNeighborsRegressor"]()
         if cfg.model_type == "linear_regression":
             return deps["LinearRegression"]()
 

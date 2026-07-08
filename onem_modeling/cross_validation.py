@@ -16,7 +16,7 @@ class NestedCVConfig:
     inner_folds: int = 4
     scoring: str = "roc_auc"
     random_state: int = 42
-    param_grid: Dict[str, List[object]] = field(default_factory=dict)
+    param_grid: object = field(default_factory=dict)
     selection_parameters: Dict[str, object] = field(default_factory=dict)
 
     def validate(self):
@@ -25,11 +25,16 @@ class NestedCVConfig:
         if self.model_type not in {
             "logistic_regression",
             "random_forest",
+            "extra_trees",
             "svm",
+            "knn",
+            "naive_bayes",
             "linear_regression",
             "xgboost",
         }:
             raise ValueError("unsupported model_type")
+        if self.task == "regression" and self.model_type in {"logistic_regression", "naive_bayes"}:
+            raise ValueError(f"{self.model_type} is classification-only")
         if self.feature_selection not in {"none", "k_best", "l1", "radiomics_sequence"}:
             raise ValueError(
                 "feature_selection must be none, k_best, l1, or radiomics_sequence"
@@ -45,7 +50,12 @@ def _require_dependencies():
         import numpy as np
         import pandas as pd
         from sklearn.compose import ColumnTransformer
-        from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+        from sklearn.ensemble import (
+            ExtraTreesClassifier,
+            ExtraTreesRegressor,
+            RandomForestClassifier,
+            RandomForestRegressor,
+        )
         from sklearn.feature_selection import SelectFromModel, SelectKBest, f_classif, f_regression
         from sklearn.impute import SimpleImputer
         from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -56,6 +66,8 @@ def _require_dependencies():
             roc_auc_score,
         )
         from sklearn.model_selection import GridSearchCV, GroupKFold, StratifiedGroupKFold
+        from sklearn.naive_bayes import GaussianNB
+        from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
         from sklearn.pipeline import Pipeline
         from sklearn.preprocessing import StandardScaler
         from sklearn.svm import SVC, SVR
@@ -98,12 +110,23 @@ def _build_estimator(config, deps):
                 class_weight="balanced",
                 random_state=config.random_state,
             )
+        if config.model_type == "extra_trees":
+            return deps["ExtraTreesClassifier"](
+                n_estimators=500,
+                class_weight="balanced",
+                random_state=config.random_state,
+                n_jobs=1,
+            )
         if config.model_type == "svm":
             return deps["SVC"](
                 probability=True,
                 class_weight="balanced",
                 random_state=config.random_state,
             )
+        if config.model_type == "knn":
+            return deps["KNeighborsClassifier"]()
+        if config.model_type == "naive_bayes":
+            return deps["GaussianNB"]()
     else:
         if config.model_type == "linear_regression":
             return deps["LinearRegression"]()
@@ -112,27 +135,146 @@ def _build_estimator(config, deps):
                 n_estimators=500,
                 random_state=config.random_state,
             )
+        if config.model_type == "extra_trees":
+            return deps["ExtraTreesRegressor"](
+                n_estimators=500,
+                random_state=config.random_state,
+                n_jobs=1,
+            )
         if config.model_type == "svm":
             return deps["SVR"]()
+        if config.model_type == "knn":
+            return deps["KNeighborsRegressor"]()
     raise ValueError(f"{config.model_type} is incompatible with task={config.task}")
 
 
-def _default_param_grid(config):
-    if config.model_type == "logistic_regression":
-        return {"model__C": [0.01, 0.1, 1.0, 10.0]}
-    if config.model_type == "random_forest":
+def xgboost_param_grid(preset: str = "expanded") -> Dict[str, List[object]]:
+    """Return reusable XGBoost GridSearchCV parameter grids.
+
+    ``expanded`` follows the broad reviewer-facing search space. ``compact`` is
+    suitable as a default inside nested cross-validation where every candidate
+    is refit in each inner fold.
+    """
+    if preset == "expanded":
         return {
-            "model__max_depth": [None, 4, 8],
-            "model__min_samples_leaf": [1, 3, 5],
+            "model__n_estimators": [50, 80, 100, 150, 200],
+            "model__max_depth": [2, 3, 4, 5, 6, 7],
+            "model__learning_rate": [0.03, 0.05, 0.08, 0.1],
+            "model__min_child_weight": [3, 5, 8, 10],
+            "model__gamma": [0, 0.05, 0.1, 0.125, 0.2, 0.5],
+            "model__subsample": [0.6, 0.7, 0.8],
+            "model__colsample_bytree": [0.5, 0.6, 0.7, 0.8],
+            "model__reg_alpha": [0, 0.05, 0.1, 0.2, 0.5],
+            "model__reg_lambda": [1, 2, 3, 5, 10],
         }
-    if config.model_type == "svm":
-        return {"model__C": [0.1, 1.0, 10.0], "model__kernel": ["linear", "rbf"]}
-    if config.model_type == "xgboost":
+    if preset == "compact":
         return {
+            "model__n_estimators": [80, 150],
             "model__max_depth": [2, 3, 5],
-            "model__learning_rate": [0.03, 0.1],
+            "model__learning_rate": [0.03, 0.08],
+            "model__min_child_weight": [3, 8],
+            "model__gamma": [0, 0.1],
+            "model__subsample": [0.7, 0.8],
+            "model__colsample_bytree": [0.6, 0.8],
+            "model__reg_alpha": [0, 0.1],
+            "model__reg_lambda": [1, 5],
         }
-    return {}
+    raise ValueError("preset must be 'compact' or 'expanded'")
+
+
+def model_param_grid(model_type: str, preset: str = "compact"):
+    """Return reusable GridSearchCV parameter grids for supported ML models."""
+    if model_type == "xgboost":
+        return xgboost_param_grid(preset)
+
+    if model_type == "logistic_regression":
+        if preset == "expanded":
+            return [
+                {
+                    "model__penalty": ["l2"],
+                    "model__solver": ["lbfgs", "liblinear"],
+                    "model__C": [0.001, 0.01, 0.1, 1.0, 10.0, 100.0],
+                },
+                {
+                    "model__penalty": ["l1"],
+                    "model__solver": ["liblinear"],
+                    "model__C": [0.01, 0.1, 1.0, 10.0],
+                },
+            ]
+        if preset == "compact":
+            return {"model__C": [0.01, 0.1, 1.0, 10.0]}
+
+    if model_type == "svm":
+        if preset == "expanded":
+            return [
+                {"model__kernel": ["linear"], "model__C": [0.01, 0.1, 1.0, 10.0]},
+                {
+                    "model__kernel": ["rbf"],
+                    "model__C": [0.1, 1.0, 10.0, 100.0],
+                    "model__gamma": ["scale", "auto", 0.001, 0.01, 0.1],
+                },
+            ]
+        if preset == "compact":
+            return {"model__C": [0.1, 1.0, 10.0], "model__kernel": ["linear", "rbf"]}
+
+    if model_type == "random_forest":
+        if preset == "expanded":
+            return {
+                "model__n_estimators": [100, 200, 500],
+                "model__max_depth": [None, 4, 8, 12],
+                "model__min_samples_leaf": [1, 3, 5, 10],
+                "model__max_features": ["sqrt", "log2", None],
+            }
+        if preset == "compact":
+            return {
+                "model__max_depth": [None, 4, 8],
+                "model__min_samples_leaf": [1, 3, 5],
+            }
+
+    if model_type == "extra_trees":
+        if preset == "expanded":
+            return {
+                "model__n_estimators": [100, 200, 500],
+                "model__max_depth": [None, 4, 8, 12],
+                "model__min_samples_leaf": [1, 3, 5, 10],
+                "model__max_features": ["sqrt", "log2", None],
+            }
+        if preset == "compact":
+            return {
+                "model__max_depth": [None, 4, 8],
+                "model__min_samples_leaf": [1, 3, 5],
+            }
+
+    if model_type == "knn":
+        if preset == "expanded":
+            return {
+                "model__n_neighbors": [3, 5, 7, 9, 11],
+                "model__weights": ["uniform", "distance"],
+                "model__p": [1, 2],
+            }
+        if preset == "compact":
+            return {
+                "model__n_neighbors": [3, 5, 7],
+                "model__weights": ["uniform", "distance"],
+            }
+
+    if model_type == "naive_bayes":
+        if preset == "expanded":
+            return {"model__var_smoothing": [1e-10, 1e-9, 1e-8, 1e-7, 1e-6]}
+        if preset == "compact":
+            return {"model__var_smoothing": [1e-9, 1e-8, 1e-7]}
+
+    if model_type == "linear_regression":
+        return {}
+
+    raise ValueError(
+        "model_type must be logistic_regression, svm, random_forest, "
+        "extra_trees, knn, naive_bayes, linear_regression, or xgboost"
+    )
+
+
+def _default_param_grid(config):
+    return model_param_grid(config.model_type, "compact")
 
 
 def _selected_feature_names(fitted_pipeline, feature_columns):

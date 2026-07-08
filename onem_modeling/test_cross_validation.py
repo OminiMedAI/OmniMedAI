@@ -48,6 +48,39 @@ class TestNestedPatientValidation(unittest.TestCase):
         self.assertEqual(result["predictions"]["patient_id"].nunique(), n_patients)
         self.assertEqual(len(result["fold_results"]), 4)
 
+    def test_xgboost_expanded_grid_contains_reviewer_ranges(self):
+        from onem_modeling import xgboost_param_grid
+
+        grid = xgboost_param_grid("expanded")
+        self.assertEqual(grid["model__n_estimators"], [50, 80, 100, 150, 200])
+        self.assertEqual(grid["model__max_depth"], [2, 3, 4, 5, 6, 7])
+        self.assertEqual(grid["model__learning_rate"], [0.03, 0.05, 0.08, 0.1])
+        self.assertEqual(grid["model__min_child_weight"], [3, 5, 8, 10])
+        self.assertEqual(grid["model__gamma"], [0, 0.05, 0.1, 0.125, 0.2, 0.5])
+        self.assertEqual(grid["model__subsample"], [0.6, 0.7, 0.8])
+        self.assertEqual(grid["model__colsample_bytree"], [0.5, 0.6, 0.7, 0.8])
+        self.assertEqual(grid["model__reg_alpha"], [0, 0.05, 0.1, 0.2, 0.5])
+        self.assertEqual(grid["model__reg_lambda"], [1, 2, 3, 5, 10])
+
+    def test_common_model_grids_are_available(self):
+        from onem_modeling import model_param_grid
+
+        expected_keys = {
+            "logistic_regression": "model__C",
+            "svm": "model__kernel",
+            "random_forest": "model__max_depth",
+            "extra_trees": "model__max_depth",
+            "knn": "model__n_neighbors",
+            "naive_bayes": "model__var_smoothing",
+        }
+        for model_type, key in expected_keys.items():
+            grid = model_param_grid(model_type, "compact")
+            if isinstance(grid, list):
+                flattened = set().union(*(item.keys() for item in grid))
+                self.assertIn(key, flattened)
+            else:
+                self.assertIn(key, grid)
+
 
 if __name__ == "__main__":
     unittest.main()

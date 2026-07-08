@@ -25,10 +25,12 @@ class ModelingConfig:
         if self.task not in {"classification", "regression"}:
             raise ValueError("task must be 'classification' or 'regression'")
         if self.model_type not in {
-            "random_forest", "svm", "logistic_regression",
-            "linear_regression", "xgboost"
+            "random_forest", "extra_trees", "svm", "knn", "naive_bayes",
+            "logistic_regression", "linear_regression", "xgboost"
         }:
             raise ValueError("unsupported model_type")
+        if self.task == "regression" and self.model_type in {"logistic_regression", "naive_bayes"}:
+            raise ValueError(f"{self.model_type} is classification-only")
         if not 0 < self.test_size < 1:
             raise ValueError("test_size must be between 0 and 1")
         if self.cv_folds < 2:

@@ -60,6 +60,44 @@ stability = summarize_feature_selection_stability({
 })
 ```
 
+## Nested XGBoost Search
+
+```python
+from onem_modeling import (
+    NestedCVConfig,
+    model_param_grid,
+    nested_patient_cross_validate,
+    xgboost_param_grid,
+)
+
+result = nested_patient_cross_validate(
+    feature_table,
+    label_column="label",
+    patient_column="patient_id",
+    config=NestedCVConfig(
+        model_type="xgboost",
+        outer_folds=5,
+        inner_folds=4,
+        scoring="roc_auc",
+        param_grid=xgboost_param_grid("expanded"),
+    ),
+)
+```
+
+Compact parameter grids are used by default for nested validation. Expanded
+grids are available for XGBoost, SVM, logistic regression, random forest,
+ExtraTrees, k-nearest neighbors, and Gaussian naive Bayes:
+
+```python
+config = NestedCVConfig(
+    model_type="svm",
+    param_grid=model_param_grid("svm", "expanded"),
+)
+```
+
+Users can also provide a custom `param_grid` directly; it is passed to
+`GridSearchCV` inside the inner patient-level cross-validation loop.
+
 ## Status
 
 This module is a baseline modeling layer. Future work can add nested
