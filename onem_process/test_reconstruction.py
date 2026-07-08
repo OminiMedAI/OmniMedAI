@@ -50,6 +50,35 @@ class TestReconstructionRegistry(unittest.TestCase):
         self.assertEqual(config.model_parameters["mode"], "slice_wise")
         self.assertEqual(config.model_parameters["normalization"], "z_score")
 
+    def test_multiple_4x_mri_presets_are_exported(self):
+        from onem_process import (
+            RECONSTRUCTION_PRESETS,
+            custom_torch_4x_mri_config,
+            esrgan_4x_mri_config,
+            hat_4x_mri_config,
+            rdgan_4x_mri_config,
+            srgan_4x_mri_config,
+            swin2sr_4x_mri_config,
+            swinir_4x_mri_config,
+        )
+
+        preset_functions = {
+            "custom_torch_4x_mri": custom_torch_4x_mri_config,
+            "esrgan_4x_mri": esrgan_4x_mri_config,
+            "hat_4x_mri": hat_4x_mri_config,
+            "rdgan_4x_mri": rdgan_4x_mri_config,
+            "srgan_4x_mri": srgan_4x_mri_config,
+            "swin2sr_4x_mri": swin2sr_4x_mri_config,
+            "swinir_4x_mri": swinir_4x_mri_config,
+        }
+        self.assertEqual(set(preset_functions), set(RECONSTRUCTION_PRESETS))
+        for name, factory in preset_functions.items():
+            config = factory(checkpoint_path=f"weights/{name}.pt")
+            self.assertEqual(config.scale_factors, (4.0, 4.0, 1.0))
+            self.assertEqual(config.batch_size, 16)
+            self.assertEqual(config.model_parameters["mode"], "slice_wise")
+            self.assertEqual(config.model_parameters["output_format"], "nifti")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -250,12 +250,22 @@ advanced study validation examples and input schemas.
 
 ### Super-Resolution Reconstruction
 
+OmniMedAI provides a modular reconstruction interface rather than a single
+model-specific implementation.
+
+| Family | Supported examples |
+| --- | --- |
+| Interpolation baselines | nearest, linear, cubic, Lanczos |
+| CNN-based SR | SRCNN, FSRCNN, EDSR, RDN, RCAN |
+| GAN-based SR | SRGAN, ESRGAN, RDGAN |
+| Transformer-based SR | SwinIR, Swin2SR, HAT |
+| Custom models | user-defined PyTorch architectures and checkpoints |
+
 ```python
 from onem_process import (
     InterpolationReconstructor,
     ReconstructionConfig,
     list_reconstruction_algorithms,
-    srgan_4x_mri_config,
 )
 
 print(list_reconstruction_algorithms().keys())
@@ -273,20 +283,40 @@ result = reconstructor.reconstruct_nifti(
 print(result.metadata)
 ```
 
-The reconstruction module also exposes a PyTorch adapter and algorithm registry
-for user-supplied deep super-resolution models, including common CNN-, GAN-, and
-Transformer-based families such as SRCNN, EDSR, RDN, RCAN, SRGAN, ESRGAN, RDGAN,
-SwinIR, Swin2SR, and HAT. Study-specific model weights are not bundled with the
-community repository; users provide checkpoints through `checkpoint_path`.
+The PyTorch adapter accepts user-supplied deep super-resolution models and
+checkpoints. Study-specific model weights are not bundled with the community
+repository; users provide checkpoints through `checkpoint_path`.
 
 ```python
-from onem_process import TorchSuperResolutionAdapter, srgan_4x_mri_config
-
-config = srgan_4x_mri_config(
-    checkpoint_path="path/to/srgan_generator.pt",
-    batch_size=16,
+from onem_process import (
+    custom_torch_4x_mri_config,
+    esrgan_4x_mri_config,
+    hat_4x_mri_config,
+    rdgan_4x_mri_config,
+    srgan_4x_mri_config,
+    swin2sr_4x_mri_config,
+    swinir_4x_mri_config,
 )
-adapter = TorchSuperResolutionAdapter(model=my_srgan_generator, config=config)
+
+configs = {
+    "srgan": srgan_4x_mri_config("weights/srgan_generator.pt"),
+    "esrgan": esrgan_4x_mri_config("weights/esrgan_generator.pt"),
+    "rdgan": rdgan_4x_mri_config("weights/rdgan_generator.pt"),
+    "swinir": swinir_4x_mri_config("weights/swinir_model.pt"),
+    "swin2sr": swin2sr_4x_mri_config("weights/swin2sr_model.pt"),
+    "hat": hat_4x_mri_config("weights/hat_model.pt"),
+    "custom": custom_torch_4x_mri_config(
+        "weights/custom_model.pt",
+        architecture="my_mri_sr_model",
+    ),
+}
+```
+
+```python
+from onem_process import TorchSuperResolutionAdapter, swin2sr_4x_mri_config
+
+config = swin2sr_4x_mri_config("weights/swin2sr_model.pt", batch_size=16)
+adapter = TorchSuperResolutionAdapter(model=my_swin2sr_model, config=config)
 result = adapter.reconstruct_nifti("data/input.nii.gz", "output/sr_input.nii.gz")
 print(result.metadata["parameters"])
 ```
