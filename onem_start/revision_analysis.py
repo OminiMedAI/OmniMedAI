@@ -36,24 +36,68 @@ def _section(config: Dict[str, Any], name: str):
 
 def run_modeling(section, output_dir: Path):
     from onem_modeling import (
+        FeatureSelectionConfig,
         NestedCVConfig,
         nested_patient_cross_validate,
+        repeated_seed_feature_selection,
         summarize_feature_selection_stability,
     )
 
     options = section.get("config", {})
+    model_config = NestedCVConfig(**options)
     result = nested_patient_cross_validate(
         section["input_csv"],
         label_column=section["label_column"],
         patient_column=section.get("patient_column", "patient_id"),
         feature_columns=section.get("feature_columns"),
-        config=NestedCVConfig(**options),
+        config=model_config,
     )
     result["predictions"].to_csv(output_dir / "model_oof_predictions.csv", index=False)
     stability = summarize_feature_selection_stability(result["selected_features_by_fold"])
+    stability["comparison_scope"] = "outer_cross_validation_fold"
     _write_json(result["summary"], output_dir / "model_summary.json")
     _write_json(result["fold_results"], output_dir / "model_fold_results.json")
     _write_json(stability, output_dir / "model_feature_stability.json")
+
+    seed_options = section.get("seed_stability", {})
+    if seed_options.get("enabled", False):
+        import pandas as pd
+
+        if model_config.feature_selection != "radiomics_sequence":
+            raise ValueError(
+                "Seed stability requires feature_selection=radiomics_sequence"
+            )
+        table = pd.read_csv(section["input_csv"])
+        patient_column = section.get("patient_column", "patient_id")
+        label_column = section["label_column"]
+        if patient_column in table.columns and table[patient_column].duplicated().any():
+            raise ValueError(
+                "Seed stability requires one feature-table row per patient"
+            )
+        feature_columns = section.get("feature_columns")
+        if feature_columns is None:
+            excluded = {patient_column, label_column}
+            feature_columns = [
+                column
+                for column in table.columns
+                if column not in excluded
+                and pd.api.types.is_numeric_dtype(table[column])
+            ]
+        selector_options = dict(model_config.selection_parameters)
+        selector_options.setdefault("task", model_config.task)
+        selector_options.setdefault("mrmr_features", model_config.n_features)
+        selector_options.setdefault("random_state", model_config.random_state)
+        seed_result = repeated_seed_feature_selection(
+            table[feature_columns],
+            table[label_column],
+            config=FeatureSelectionConfig(**selector_options),
+            n_repeats=seed_options.get("n_repeats", 10),
+            random_states=seed_options.get("random_states"),
+        )
+        _write_json(
+            seed_result,
+            output_dir / "model_seed_feature_stability.json",
+        )
     return result
 
 

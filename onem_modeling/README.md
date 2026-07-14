@@ -11,7 +11,9 @@ features into baseline machine-learning models for research workflows.
 - Support random forest, SVM, logistic regression, and linear regression.
 - Support optional XGBoost classification and regression.
 - Split datasets at patient level and detect overlap between cohorts.
-- Summarize feature-selection stability across random seeds.
+- Repeat the complete radiomics feature-selection sequence across random seeds.
+- Report pairwise Jaccard similarity, per-feature selection frequency, and
+  consensus features across runs.
 - Compose univariate, correlation, mRMR, and LASSO selection stages.
 - Run the complete selection sequence inside nested cross-validation.
 - Fit on a development cohort, infer an external cohort, and persist models.
@@ -58,6 +60,33 @@ stability = summarize_feature_selection_stability({
     1: ["feature_a", "feature_b"],
     2: ["feature_a", "feature_b", "feature_c"],
 })
+```
+
+The complete univariate/correlation/mRMR/LASSO sequence can also be repeated
+directly. Ten runs produce 45 pairwise Jaccard comparisons:
+
+```python
+from onem_modeling import (
+    FeatureSelectionConfig,
+    repeated_seed_feature_selection,
+)
+
+seed_result = repeated_seed_feature_selection(
+    training_features,
+    training_labels,
+    config=FeatureSelectionConfig(
+        univariate_p_threshold=0.05,
+        correlation_threshold=0.9,
+        mrmr_features=50,
+        lasso_cv_folds=10,
+        random_state=2026,
+    ),
+    n_repeats=10,
+)
+
+stability = seed_result["stability"]
+print(stability["mean_pairwise_jaccard"])
+print(stability["feature_selection_rate"])
 ```
 
 ## Nested XGBoost Search

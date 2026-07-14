@@ -57,6 +57,32 @@ result["predictions"].to_csv("results/oof_predictions.csv", index=False)
 All imputation, scaling, feature selection, and hyperparameter search occur
 inside the training folds.
 
+Feature-selection stability across 10 random seeds can be run independently on
+the development cohort:
+
+```python
+from onem_modeling import FeatureSelectionConfig, repeated_seed_feature_selection
+
+seed_result = repeated_seed_feature_selection(
+    training_features,
+    training_labels,
+    config=FeatureSelectionConfig(
+        univariate_p_threshold=0.05,
+        correlation_threshold=0.9,
+        mrmr_features=50,
+        lasso_cv_folds=10,
+        random_state=2026,
+    ),
+    n_repeats=10,
+)
+```
+
+The result records all random states and selected feature sets and reports the
+45 pairwise Jaccard values, their mean and range, per-feature selection rates,
+and features selected in every run. The configuration-driven runner performs
+the same analysis when `modeling.seed_stability.enabled` is set to `true` and
+writes `model_seed_feature_stability.json`.
+
 ## 2. Classification Evaluation
 
 ```python

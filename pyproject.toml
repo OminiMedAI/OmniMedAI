@@ -121,7 +121,8 @@ testpaths = [
   "onem_modeling",
   "onem_eval",
   "onem_path",
-  "onem_omics"
+  "onem_omics",
+  "onem_start"
 ]
 python_files = ["test_*.py"]
 addopts = "-ra"

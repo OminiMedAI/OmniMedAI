@@ -18,7 +18,11 @@ from .validation import (
     patient_level_train_test_split,
     summarize_feature_selection_stability,
 )
-from .feature_selection import FeatureSelectionConfig, SequentialRadiomicsSelector
+from .feature_selection import (
+    FeatureSelectionConfig,
+    SequentialRadiomicsSelector,
+    repeated_seed_feature_selection,
+)
 from .explain import shap_feature_summary
 
 __version__ = "1.12.1"
@@ -32,6 +36,7 @@ __all__ = [
     "TabularModeler",
     "assert_no_patient_overlap",
     "patient_level_train_test_split",
+    "repeated_seed_feature_selection",
     "nested_patient_cross_validate",
     "model_param_grid",
     "summarize_feature_selection_stability",

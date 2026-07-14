@@ -101,10 +101,18 @@ def summarize_feature_selection_stability(selected_features_by_seed) -> Dict[str
 
     keys = list(selections.keys())
     pairwise = []
+    pairwise_records = []
     for left, right in combinations(keys, 2):
         union = selections[left] | selections[right]
         score = 1.0 if not union else len(selections[left] & selections[right]) / len(union)
         pairwise.append(score)
+        pairwise_records.append(
+            {
+                "left": left,
+                "right": right,
+                "jaccard": float(score),
+            }
+        )
 
     all_features = sorted(set().union(*selections.values())) if selections else []
     frequency = {
@@ -112,6 +120,10 @@ def summarize_feature_selection_stability(selected_features_by_seed) -> Dict[str
         for feature in all_features
     }
     n_runs = max(len(selections), 1)
+    selection_rate = {
+        feature: float(count / n_runs)
+        for feature, count in frequency.items()
+    }
     consensus = [
         feature
         for feature, count in frequency.items()
@@ -130,6 +142,8 @@ def summarize_feature_selection_stability(selected_features_by_seed) -> Dict[str
         "mean_pairwise_jaccard": float(mean_jaccard),
         "min_pairwise_jaccard": float(min_jaccard),
         "max_pairwise_jaccard": float(max_jaccard),
+        "pairwise_jaccard": pairwise_records,
         "consensus_features": consensus,
         "feature_frequency": frequency,
+        "feature_selection_rate": selection_rate,
     }

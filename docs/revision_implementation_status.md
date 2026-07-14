@@ -10,7 +10,7 @@ paper's actual analyses.
 | Patient-level splitting and leakage control | `onem_modeling.validation` | Ready |
 | Nested CV with fold-local preprocessing and sequential radiomics feature selection | `onem_modeling.cross_validation` | Ready |
 | Hyperparameter and selected-feature reporting | Nested CV outputs | Ready |
-| Seed/fold feature-selection stability | `summarize_feature_selection_stability` | Ready |
+| Seed/fold feature-selection stability | `repeated_seed_feature_selection`, `summarize_feature_selection_stability` | Ready; workflow supports 10 repeated runs |
 | AUC confidence intervals | `onem_eval.bootstrap_auc_ci` | Ready |
 | Calibration and decision curves | `onem_eval.calibration_table`, `decision_curve` | Ready |
 | Kaplan-Meier, number at risk, Cox, C-index | `onem_eval.survival` | Ready; requires `lifelines` |

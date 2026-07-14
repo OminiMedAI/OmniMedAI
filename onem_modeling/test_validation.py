@@ -3,6 +3,7 @@
 import sys
 import unittest
 from pathlib import Path
+from math import isclose
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -29,6 +30,12 @@ class TestValidationUtilities(unittest.TestCase):
             {1: ["a", "b"], 2: ["a", "b", "c"], 3: ["a", "b", "d"]}
         )
         self.assertEqual(stability["consensus_features"], ["a", "b"])
+        self.assertEqual(len(stability["pairwise_jaccard"]), 3)
+        self.assertTrue(isclose(stability["mean_pairwise_jaccard"], 11 / 18))
+        self.assertTrue(isclose(stability["min_pairwise_jaccard"], 0.5))
+        self.assertTrue(isclose(stability["max_pairwise_jaccard"], 2 / 3))
+        self.assertEqual(stability["feature_selection_rate"]["a"], 1.0)
+        self.assertTrue(isclose(stability["feature_selection_rate"]["c"], 1 / 3))
 
     @unittest.skipUnless(PANDAS_AVAILABLE, "pandas not available")
     def test_overlap_check(self):

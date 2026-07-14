@@ -19,6 +19,10 @@
         "correlation_threshold": 0.9,
         "lasso_cv_folds": 5
       }
+    },
+    "seed_stability": {
+      "enabled": false,
+      "n_repeats": 10
     }
   },
   "classification_evaluation": {

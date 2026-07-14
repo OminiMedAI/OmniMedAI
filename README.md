@@ -242,7 +242,8 @@ print(metrics["accuracy"])
 
 Advanced validation utilities include patient-level splitting, leakage checks,
 ICC, bootstrap confidence intervals, calibration, decision-curve analysis,
-survival analysis, treatment-effect sensitivity analysis, and
+survival analysis, treatment-effect sensitivity analysis, repeated feature
+selection across random seeds with Jaccard stability reporting, and
 machine-readable workflow manifests.
 
 See [`docs/actual_data_workflow.md`](./docs/actual_data_workflow.md) for

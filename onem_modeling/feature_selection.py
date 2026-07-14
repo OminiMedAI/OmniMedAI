@@ -1,7 +1,7 @@
 """Composable radiomics feature-selection stages."""
 
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, replace
+from typing import Iterable, List, Optional
 
 
 def _require_dependencies():
@@ -218,3 +218,53 @@ class SequentialRadiomicsSelector:
             selected.append(best)
             remaining.remove(best)
         return selected
+
+
+def repeated_seed_feature_selection(
+    x,
+    y,
+    config: Optional[FeatureSelectionConfig] = None,
+    n_repeats: int = 10,
+    random_states: Optional[Iterable[int]] = None,
+):
+    """Repeat the complete selection sequence and summarize seed stability.
+
+    When ``random_states`` is omitted, consecutive states beginning at the
+    configuration's ``random_state`` are used. The returned report records the
+    states for reproducibility even when a manuscript reports only the number
+    of repeated runs.
+    """
+    from .validation import summarize_feature_selection_stability
+
+    base_config = config or FeatureSelectionConfig()
+    base_config.validate()
+    if random_states is None:
+        if n_repeats < 2:
+            raise ValueError("n_repeats must be at least 2")
+        states = [base_config.random_state + offset for offset in range(n_repeats)]
+    else:
+        states = [int(state) for state in random_states]
+        if len(states) < 2:
+            raise ValueError("random_states must contain at least 2 values")
+        if len(states) != len(set(states)):
+            raise ValueError("random_states must be unique")
+
+    selected_by_seed = {}
+    reports_by_seed = {}
+    for state in states:
+        selector = SequentialRadiomicsSelector(
+            replace(base_config, random_state=state)
+        ).fit(x, y)
+        key = str(state)
+        selected_by_seed[key] = list(selector.selected_features_)
+        reports_by_seed[key] = selector.report()
+
+    stability = summarize_feature_selection_stability(selected_by_seed)
+    stability["comparison_scope"] = "random_seed"
+    return {
+        "n_runs": len(states),
+        "random_states": states,
+        "selected_features_by_seed": selected_by_seed,
+        "reports_by_seed": reports_by_seed,
+        "stability": stability,
+    }
