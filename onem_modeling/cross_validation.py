@@ -429,6 +429,7 @@ def tune_patient_model(
         refit=True,
         n_jobs=1,
         return_train_score=False,
+        error_score="raise",
     )
     search.fit(x, y, groups=groups)
     return {
@@ -507,6 +508,7 @@ def nested_patient_cross_validate(
             refit=True,
             n_jobs=1,
             return_train_score=False,
+            error_score="raise",
         )
         search.fit(x_train, y_train, groups=train_groups)
         fitted_models.append(search.best_estimator_)

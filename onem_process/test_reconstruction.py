@@ -14,6 +14,13 @@ try:
 except ImportError:
     DEPENDENCIES_AVAILABLE = False
 
+try:
+    import torch
+
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+
 
 class TestInterpolationReconstruction(unittest.TestCase):
     @unittest.skipUnless(DEPENDENCIES_AVAILABLE, "numpy or scipy unavailable")
@@ -78,6 +85,32 @@ class TestReconstructionRegistry(unittest.TestCase):
             self.assertEqual(config.batch_size, 16)
             self.assertEqual(config.model_parameters["mode"], "slice_wise")
             self.assertEqual(config.model_parameters["output_format"], "nifti")
+
+
+class TestTorchSuperResolutionAdapter(unittest.TestCase):
+    @unittest.skipUnless(
+        DEPENDENCIES_AVAILABLE and TORCH_AVAILABLE,
+        "numpy, scipy, or torch unavailable",
+    )
+    def test_srgan_preset_runs_four_x_slice_wise_inference(self):
+        from onem_process import TorchSuperResolutionAdapter, srgan_4x_mri_config
+
+        class FourXGenerator(torch.nn.Module):
+            def forward(self, image):
+                return torch.nn.functional.interpolate(
+                    image, scale_factor=4, mode="bilinear", align_corners=False
+                )
+
+        config = srgan_4x_mri_config(batch_size=2)
+        adapter = TorchSuperResolutionAdapter(FourXGenerator(), config)
+        image = np.arange(4 * 5 * 3, dtype=np.float32).reshape(4, 5, 3)
+
+        result = adapter.reconstruct_array(image)
+
+        self.assertEqual(result.image.shape, (16, 20, 3))
+        self.assertEqual(result.metadata["algorithm"], "srgan")
+        self.assertEqual(result.metadata["batch_size"], 2)
+        self.assertEqual(result.metadata["mode"], "slice_wise")
 
 
 if __name__ == "__main__":

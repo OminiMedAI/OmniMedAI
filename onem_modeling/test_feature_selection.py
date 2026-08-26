@@ -18,6 +18,15 @@ except ImportError:
 
 
 class TestSequentialRadiomicsSelector(unittest.TestCase):
+    def test_correlation_method_is_configurable(self):
+        from onem_modeling import FeatureSelectionConfig
+
+        config = FeatureSelectionConfig(correlation_method="pearson")
+        config.validate()
+        self.assertEqual(config.correlation_method, "pearson")
+        with self.assertRaises(ValueError):
+            FeatureSelectionConfig(correlation_method="kendall").validate()
+
     @unittest.skipUnless(DEPENDENCIES_AVAILABLE, "analysis dependencies unavailable")
     def test_selects_signal_features(self):
         from onem_modeling import FeatureSelectionConfig, SequentialRadiomicsSelector

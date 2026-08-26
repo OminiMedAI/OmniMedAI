@@ -26,6 +26,7 @@ class FeatureSelectionConfig:
     task: str = "classification"
     univariate_p_threshold: Optional[float] = 0.05
     correlation_threshold: Optional[float] = 0.9
+    correlation_method: str = "spearman"
     mrmr_features: Optional[int] = 50
     lasso_cv_folds: int = 5
     random_state: int = 42
@@ -37,6 +38,8 @@ class FeatureSelectionConfig:
             raise ValueError("univariate_p_threshold must be in (0, 1]")
         if self.correlation_threshold is not None and not 0 < self.correlation_threshold <= 1:
             raise ValueError("correlation_threshold must be in (0, 1]")
+        if self.correlation_method not in {"pearson", "spearman"}:
+            raise ValueError("correlation_method must be pearson or spearman")
         if self.mrmr_features is not None and self.mrmr_features < 1:
             raise ValueError("mrmr_features must be positive")
         if self.lasso_cv_folds < 2:
@@ -75,7 +78,9 @@ class SequentialRadiomicsSelector:
 
         if self.config.correlation_threshold is not None:
             features = self._correlation_filter(
-                numeric[features], self.config.correlation_threshold
+                numeric[features],
+                self.config.correlation_threshold,
+                self.config.correlation_method,
             )
         self.stage_features_["correlation"] = list(features)
 
@@ -85,6 +90,7 @@ class SequentialRadiomicsSelector:
                 y,
                 min(self.config.mrmr_features, len(features)),
                 deps,
+                self.config.correlation_method,
             )
         self.stage_features_["mrmr"] = list(features)
 
@@ -179,15 +185,15 @@ class SequentialRadiomicsSelector:
                         kept.append(feature)
         return kept
 
-    def _correlation_filter(self, x, threshold):
-        correlation = x.corr(method="spearman").abs()
+    def _correlation_filter(self, x, threshold, method):
+        correlation = x.corr(method=method).abs()
         kept = []
         for feature in x.columns:
             if all(correlation.loc[feature, previous] < threshold for previous in kept):
                 kept.append(feature)
         return kept
 
-    def _mrmr_select(self, x, y, n_features, deps):
+    def _mrmr_select(self, x, y, n_features, deps, correlation_method):
         np = deps["np"]
         values = x.fillna(x.median()).to_numpy()
         if self.config.task == "classification":
@@ -207,7 +213,11 @@ class SequentialRadiomicsSelector:
                 if selected:
                     redundancy = np.mean(
                         [
-                            abs(x[candidate].corr(x[chosen], method="spearman"))
+                            abs(
+                                x[candidate].corr(
+                                    x[chosen], method=correlation_method
+                                )
+                            )
                             for chosen in selected
                         ]
                     )
