@@ -11,6 +11,7 @@ from .cross_validation import (
     NestedCVConfig,
     model_param_grid,
     nested_patient_cross_validate,
+    tune_patient_model,
     xgboost_param_grid,
 )
 from .validation import (
@@ -38,6 +39,7 @@ __all__ = [
     "patient_level_train_test_split",
     "repeated_seed_feature_selection",
     "nested_patient_cross_validate",
+    "tune_patient_model",
     "model_param_grid",
     "summarize_feature_selection_stability",
     "shap_feature_summary",

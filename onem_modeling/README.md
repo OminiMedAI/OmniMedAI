@@ -96,6 +96,7 @@ from onem_modeling import (
     NestedCVConfig,
     model_param_grid,
     nested_patient_cross_validate,
+    tune_patient_model,
     xgboost_param_grid,
 )
 
@@ -127,8 +128,26 @@ config = NestedCVConfig(
 Users can also provide a custom `param_grid` directly; it is passed to
 `GridSearchCV` inside the inner patient-level cross-validation loop.
 
+After comparing candidate model families with nested validation, refit the
+selected family on all training patients with the same grouped search rules:
+
+```python
+final_result = tune_patient_model(
+    feature_table,
+    label_column="label",
+    patient_column="patient_id",
+    config=NestedCVConfig(
+        model_type=selected_model_type,
+        inner_folds=5,
+        param_grid=model_param_grid(selected_model_type, "compact"),
+    ),
+)
+final_model = final_result["model"]
+```
+
 ## Status
 
-This module is a baseline modeling layer. Future work can add nested
-cross-validation, survival models, feature selection pipelines, calibration,
-class-imbalance handling, and experiment tracking.
+This module provides patient-level nested validation, reusable model-specific
+parameter grids, final model tuning, and feature-selection support. Survival
+models, calibration, class-imbalance handling, and experiment tracking can be
+added as separate workflow components.

@@ -62,6 +62,25 @@ class TestNestedPatientValidation(unittest.TestCase):
         self.assertEqual(grid["model__reg_alpha"], [0, 0.05, 0.1, 0.2, 0.5])
         self.assertEqual(grid["model__reg_lambda"], [1, 2, 3, 5, 10])
 
+    def test_xgboost_compact_grid_contains_reported_optimum(self):
+        from onem_modeling import xgboost_param_grid
+
+        grid = xgboost_param_grid("compact")
+        reported = {
+            "model__n_estimators": [100],
+            "model__max_depth": [4],
+            "model__learning_rate": [0.05],
+            "model__min_child_weight": [3],
+            "model__gamma": [0.05],
+            "model__subsample": [0.75],
+            "model__colsample_bytree": [0.70],
+            "model__reg_alpha": [0.05],
+            "model__reg_lambda": [2.0],
+        }
+
+        self.assertEqual(len(grid), 48)
+        self.assertIn(reported, grid)
+
     def test_common_model_grids_are_available(self):
         from onem_modeling import model_param_grid
 
@@ -80,6 +99,36 @@ class TestNestedPatientValidation(unittest.TestCase):
                 self.assertIn(key, flattened)
             else:
                 self.assertIn(key, grid)
+
+    @unittest.skipUnless(DEPENDENCIES_AVAILABLE, "numpy, pandas, or scikit-learn unavailable")
+    def test_tune_patient_model_returns_refitted_best_estimator(self):
+        from onem_modeling import NestedCVConfig, tune_patient_model
+
+        rng = np.random.default_rng(11)
+        n_patients = 30
+        feature = rng.normal(size=n_patients)
+        table = pd.DataFrame(
+            {
+                "patient_id": [f"p{index:03d}" for index in range(n_patients)],
+                "label": (feature > 0).astype(int),
+                "feature": feature,
+            }
+        )
+        result = tune_patient_model(
+            table,
+            label_column="label",
+            feature_columns=["feature"],
+            config=NestedCVConfig(
+                model_type="logistic_regression",
+                feature_selection="none",
+                inner_folds=3,
+                param_grid={"model__C": [0.1, 1.0]},
+            ),
+        )
+
+        self.assertTrue(hasattr(result["model"], "predict_proba"))
+        self.assertIn(result["best_params"]["model__C"], [0.1, 1.0])
+        self.assertEqual(result["selected_features"], ["feature"])
 
 
 if __name__ == "__main__":

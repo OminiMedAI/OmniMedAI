@@ -1,6 +1,7 @@
 """Leakage-safe nested cross-validation for patient-level feature tables."""
 
 from dataclasses import dataclass, field
+from itertools import product
 from typing import Dict, List, Optional
 
 
@@ -148,7 +149,20 @@ def _build_estimator(config, deps):
     raise ValueError(f"{config.model_type} is incompatible with task={config.task}")
 
 
-def xgboost_param_grid(preset: str = "expanded") -> Dict[str, List[object]]:
+def _grouped_xgboost_candidates(reference, search_space, groups):
+    candidates = {}
+    for group in groups:
+        for values in product(*(search_space[name] for name in group)):
+            candidate = dict(reference)
+            candidate.update(dict(zip(group, values)))
+            candidates[tuple(sorted(candidate.items()))] = candidate
+    return [
+        {f"model__{name}": [value] for name, value in candidate.items()}
+        for candidate in candidates.values()
+    ]
+
+
+def xgboost_param_grid(preset: str = "expanded"):
     """Return reusable XGBoost GridSearchCV parameter grids.
 
     ``expanded`` follows the broad reviewer-facing search space. ``compact`` is
@@ -168,17 +182,35 @@ def xgboost_param_grid(preset: str = "expanded") -> Dict[str, List[object]]:
             "model__reg_lambda": [1, 2, 3, 5, 10],
         }
     if preset == "compact":
-        return {
-            "model__n_estimators": [80, 150],
-            "model__max_depth": [2, 3, 5],
-            "model__learning_rate": [0.03, 0.08],
-            "model__min_child_weight": [3, 8],
-            "model__gamma": [0, 0.1],
-            "model__subsample": [0.7, 0.8],
-            "model__colsample_bytree": [0.6, 0.8],
-            "model__reg_alpha": [0, 0.1],
-            "model__reg_lambda": [1, 5],
+        reference = {
+            "n_estimators": 100,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "min_child_weight": 3,
+            "gamma": 0.05,
+            "subsample": 0.75,
+            "colsample_bytree": 0.70,
+            "reg_alpha": 0.05,
+            "reg_lambda": 2.0,
         }
+        search_space = {
+            "n_estimators": [80, 100, 150],
+            "max_depth": [2, 4, 5],
+            "learning_rate": [0.03, 0.05, 0.08],
+            "min_child_weight": [3, 8],
+            "gamma": [0, 0.05, 0.1],
+            "subsample": [0.7, 0.75, 0.8],
+            "colsample_bytree": [0.6, 0.7, 0.8],
+            "reg_alpha": [0, 0.05, 0.1],
+            "reg_lambda": [1, 2.0, 5],
+        }
+        groups = [
+            ("n_estimators", "max_depth", "learning_rate"),
+            ("min_child_weight", "gamma"),
+            ("subsample", "colsample_bytree"),
+            ("reg_alpha", "reg_lambda"),
+        ]
+        return _grouped_xgboost_candidates(reference, search_space, groups)
     raise ValueError("preset must be 'compact' or 'expanded'")
 
 
@@ -285,25 +317,48 @@ def _selected_feature_names(fitted_pipeline, feature_columns):
     return [name for name, keep in zip(feature_columns, support) if keep]
 
 
-def nested_patient_cross_validate(
-    data,
-    label_column: str,
-    patient_column: str = "patient_id",
-    feature_columns: Optional[List[str]] = None,
-    config: Optional[NestedCVConfig] = None,
-):
-    """Run nested cross-validation with all learned steps inside each fold.
+def _build_pipeline(config, deps, feature_columns):
+    steps = []
+    if config.feature_selection == "radiomics_sequence":
+        from .feature_selection import (
+            FeatureSelectionConfig,
+            SequentialRadiomicsSelector,
+        )
 
-    ``data`` may be a pandas DataFrame or a CSV path. The returned prediction
-    table can be saved and used directly for confidence intervals, calibration,
-    and decision-curve analysis.
-    """
-    config = config or NestedCVConfig()
-    config.validate()
-    deps = _require_dependencies()
-    np = deps["np"]
+        selector_options = dict(config.selection_parameters)
+        selector_options.setdefault("task", config.task)
+        selector_options.setdefault("mrmr_features", config.n_features)
+        selector_options.setdefault("random_state", config.random_state)
+        selector_config = FeatureSelectionConfig(**selector_options)
+        steps.append(("selector", SequentialRadiomicsSelector(selector_config)))
+    steps.extend(
+        [
+            ("imputer", deps["SimpleImputer"](strategy="median")),
+            ("scaler", deps["StandardScaler"]()),
+        ]
+    )
+    if config.feature_selection == "k_best":
+        score_func = (
+            deps["f_classif"] if config.task == "classification" else deps["f_regression"]
+        )
+        k = min(config.n_features, len(feature_columns))
+        steps.insert(2, ("selector", deps["SelectKBest"](score_func=score_func, k=k)))
+    elif config.feature_selection == "l1":
+        if config.task != "classification":
+            raise ValueError("l1 feature selection currently supports classification only")
+        selector_model = deps["LogisticRegression"](
+            penalty="l1",
+            solver="liblinear",
+            class_weight="balanced",
+            random_state=config.random_state,
+        )
+        steps.insert(2, ("selector", deps["SelectFromModel"](selector_model)))
+    steps.append(("model", _build_estimator(config, deps)))
+    return deps["Pipeline"](steps)
+
+
+def _prepare_model_data(data, label_column, patient_column, feature_columns, deps):
     pd = deps["pd"]
-
     df = pd.read_csv(data) if isinstance(data, (str, bytes)) else data.copy()
     required = {label_column, patient_column}
     missing = sorted(required.difference(df.columns))
@@ -325,10 +380,89 @@ def nested_patient_cross_validate(
         ]
     if not feature_columns:
         raise ValueError("No numeric feature columns were selected")
+    missing_features = sorted(set(feature_columns).difference(df.columns))
+    if missing_features:
+        raise ValueError(f"Missing feature columns: {missing_features}")
 
-    x = df[feature_columns]
-    y = df[label_column]
-    groups = df[patient_column]
+    return (
+        df,
+        list(feature_columns),
+        df[feature_columns],
+        df[label_column],
+        df[patient_column],
+    )
+
+
+def tune_patient_model(
+    data,
+    label_column: str,
+    patient_column: str = "patient_id",
+    feature_columns: Optional[List[str]] = None,
+    config: Optional[NestedCVConfig] = None,
+):
+    """Tune and refit one model on all training patients.
+
+    This function is intended for final model fitting after model selection.
+    Hyperparameters are selected only through patient-grouped inner folds.
+    """
+    config = config or NestedCVConfig()
+    config.validate()
+    deps = _require_dependencies()
+    _, feature_columns, x, y, groups = _prepare_model_data(
+        data, label_column, patient_column, feature_columns, deps
+    )
+    pipeline = _build_pipeline(config, deps, feature_columns)
+    if config.task == "classification":
+        splitter = deps["StratifiedGroupKFold"](
+            n_splits=config.inner_folds,
+            shuffle=True,
+            random_state=config.random_state,
+        )
+    else:
+        splitter = deps["GroupKFold"](n_splits=config.inner_folds)
+    param_grid = config.param_grid or _default_param_grid(config)
+    search = deps["GridSearchCV"](
+        pipeline,
+        param_grid,
+        scoring=config.scoring,
+        cv=splitter,
+        refit=True,
+        n_jobs=1,
+        return_train_score=False,
+    )
+    search.fit(x, y, groups=groups)
+    return {
+        "model": search.best_estimator_,
+        "best_params": search.best_params_,
+        "best_score": float(search.best_score_),
+        "selected_features": _selected_feature_names(
+            search.best_estimator_, feature_columns
+        ),
+        "param_grid": param_grid,
+    }
+
+
+def nested_patient_cross_validate(
+    data,
+    label_column: str,
+    patient_column: str = "patient_id",
+    feature_columns: Optional[List[str]] = None,
+    config: Optional[NestedCVConfig] = None,
+):
+    """Run nested cross-validation with all learned steps inside each fold.
+
+    ``data`` may be a pandas DataFrame or a CSV path. The returned prediction
+    table can be saved and used directly for confidence intervals, calibration,
+    and decision-curve analysis.
+    """
+    config = config or NestedCVConfig()
+    config.validate()
+    deps = _require_dependencies()
+    np = deps["np"]
+    pd = deps["pd"]
+    df, feature_columns, x, y, groups = _prepare_model_data(
+        data, label_column, patient_column, feature_columns, deps
+    )
     if config.task == "classification":
         splitter = deps["StratifiedGroupKFold"](
             n_splits=config.outer_folds,
@@ -354,43 +488,7 @@ def nested_patient_cross_validate(
         if overlap:
             raise RuntimeError(f"Patient leakage in fold {fold}: {sorted(overlap)[:5]}")
 
-        steps = []
-        if config.feature_selection == "radiomics_sequence":
-            from .feature_selection import (
-                FeatureSelectionConfig,
-                SequentialRadiomicsSelector,
-            )
-
-            selector_options = dict(config.selection_parameters)
-            selector_options.setdefault("task", config.task)
-            selector_options.setdefault("mrmr_features", config.n_features)
-            selector_options.setdefault("random_state", config.random_state)
-            selector_config = FeatureSelectionConfig(**selector_options)
-            steps.append(
-                ("selector", SequentialRadiomicsSelector(selector_config))
-            )
-        steps.extend(
-            [
-                ("imputer", deps["SimpleImputer"](strategy="median")),
-                ("scaler", deps["StandardScaler"]()),
-            ]
-        )
-        if config.feature_selection == "k_best":
-            score_func = deps["f_classif"] if config.task == "classification" else deps["f_regression"]
-            k = min(config.n_features, len(feature_columns))
-            steps.insert(2, ("selector", deps["SelectKBest"](score_func=score_func, k=k)))
-        elif config.feature_selection == "l1":
-            if config.task != "classification":
-                raise ValueError("l1 feature selection currently supports classification only")
-            selector_model = deps["LogisticRegression"](
-                penalty="l1",
-                solver="liblinear",
-                class_weight="balanced",
-                random_state=config.random_state,
-            )
-            steps.insert(2, ("selector", deps["SelectFromModel"](selector_model)))
-        steps.append(("model", _build_estimator(config, deps)))
-        pipeline = deps["Pipeline"](steps)
+        pipeline = _build_pipeline(config, deps, feature_columns)
 
         if config.task == "classification":
             inner_splitter = deps["StratifiedGroupKFold"](
