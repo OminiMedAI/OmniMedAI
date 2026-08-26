@@ -83,6 +83,36 @@ class TestRadiomicsConfig(unittest.TestCase):
         finally:
             if os.path.exists(temp_path):
                 os.unlink(temp_path)
+
+    def test_pyradiomics_style_mr_config(self):
+        """Parse imageType, featureClass, and setting dictionaries."""
+        from onem_radiomics.config.settings import RadiomicsConfig
+
+        config = RadiomicsConfig.from_dict(
+            {
+                "MR": {
+                    "imageType": {
+                        "Original": {},
+                        "LoG": {"sigma": [2.0, 3.0]},
+                    },
+                    "featureClass": {
+                        "firstorder": None,
+                        "glcm": ["Autocorrelation", "JointAverage"],
+                    },
+                    "setting": {
+                        "normalize": True,
+                        "resampledPixelSpacing": [2.0, 2.0, 2.0],
+                        "binWidth": 5,
+                        "voxelArrayShift": 300,
+                    },
+                }
+            }
+        )
+
+        self.assertTrue(config.normalize)
+        self.assertEqual(config.bin_width, 5)
+        self.assertEqual(config.feature_names["glcm"], ["Autocorrelation", "JointAverage"])
+        self.assertEqual(config.custom_settings["voxelArrayShift"], 300)
     
     def test_preset_configs(self):
         """Test preset configurations."""
@@ -310,6 +340,32 @@ class TestRadiomicsExtractor(unittest.TestCase):
         for feature_name, description in descriptions.items():
             self.assertIsInstance(feature_name, str)
             self.assertIsInstance(description, str)
+
+    @unittest.skipUnless(NIBABEL_AVAILABLE and RADIOMICS_AVAILABLE,
+                         "nibabel or pyradiomics not available")
+    def test_extraction_preserves_scalar_feature_values(self):
+        """Keep zero-dimensional PyRadiomics values as numeric features."""
+        from onem_radiomics.config.settings import RadiomicsConfig
+        from onem_radiomics.extractors.radiomics_extractor import RadiomicsExtractor
+
+        image = np.indices((12, 12, 12)).sum(axis=0).astype(np.float32)
+        mask = np.zeros((12, 12, 12), dtype=np.uint8)
+        mask[3:9, 3:9, 3:9] = 1
+        image_path = os.path.join(self.temp_dir, "image.nii.gz")
+        mask_path = os.path.join(self.temp_dir, "mask.nii.gz")
+        nib.save(nib.Nifti1Image(image, np.eye(4)), image_path)
+        nib.save(nib.Nifti1Image(mask, np.eye(4)), mask_path)
+
+        config = RadiomicsConfig(
+            feature_types=["firstorder"],
+            image_types={"Original": {}},
+        )
+        result = RadiomicsExtractor(config).extract_features(image_path, mask_path)
+
+        self.assertEqual(len(result["features"]), 18)
+        self.assertFalse(
+            any(name.startswith("Diagnostics") for name in result["features"])
+        )
     
     def test_dependency_checking(self):
         """Test dependency checking in extractor."""

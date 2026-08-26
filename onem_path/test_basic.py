@@ -386,6 +386,7 @@ class TestTITANExtractor(unittest.TestCase):
             'titan_backbone': 'resnet18',  # Smaller model for testing
             'titan_feature_dim': 128,
             'titan_use_attention': False,
+            'titan_pretrained': False,
             'device': 'cpu'  # Use CPU for testing
         }
         
@@ -413,7 +414,8 @@ class TestTITANExtractor(unittest.TestCase):
             self.extractor._load_and_preprocess_image = lambda path: torch.randn(1, 3, 224, 224)
             
             try:
-                result = self.extractor.extract_features("mock_path.jpg")
+                with tempfile.NamedTemporaryFile(suffix=".jpg") as test_file:
+                    result = self.extractor.extract_features(test_file.name)
                 
                 self.assertIn('features', result)
                 self.assertIn('model_info', result)

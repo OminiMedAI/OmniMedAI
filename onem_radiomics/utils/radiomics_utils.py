@@ -15,7 +15,11 @@ except ImportError:
     RADIOMICS_AVAILABLE = False
 
 
-def setup_radiomics_features(extractor, feature_types: List[str]):
+def setup_radiomics_features(
+    extractor,
+    feature_types: List[str],
+    feature_names: Optional[Dict[str, Optional[List[str]]]] = None,
+):
     """
     Setup radiomics feature extraction with specified feature types.
     
@@ -31,15 +35,18 @@ def setup_radiomics_features(extractor, feature_types: List[str]):
         'firstorder', 'glcm', 'glrlm', 'glszm', 'gldm', 'ngtdm', 'shape'
     ]
     
-    # Disable all features first
-    for feature_class in all_features:
-        extractor.disableFeatureClass(feature_class)
+    # PyRadiomics exposes feature-class control through its aggregate API.
+    extractor.disableAllFeatures()
     
-    # Enable specified features
+    feature_names = feature_names or {}
     for feature_type in feature_types:
         if feature_type in all_features:
             try:
-                extractor.enableFeatureClass(feature_type)
+                selected = feature_names.get(feature_type)
+                if selected is None:
+                    extractor.enableFeatureClassByName(feature_type)
+                else:
+                    extractor.enableFeaturesByName(**{feature_type: list(selected)})
                 logging.info(f"Enabled feature class: {feature_type}")
             except Exception as e:
                 logging.warning(f"Failed to enable feature class {feature_type}: {e}")

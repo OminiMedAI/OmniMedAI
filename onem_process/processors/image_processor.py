@@ -175,6 +175,79 @@ class ImageProcessor:
         
         return output_path
 
+    def n4_bias_field_correction(
+        self,
+        image_path: str,
+        output_path: str,
+        mask_path: Optional[str] = None,
+        shrink_factor: int = 2,
+        maximum_iterations: Tuple[int, ...] = (50, 50, 30, 20),
+        backend: str = "simpleitk",
+    ) -> str:
+        """Apply N4 bias-field correction to a three-dimensional MRI volume."""
+        if backend not in {"simpleitk", "ants"}:
+            raise ValueError("backend must be simpleitk or ants")
+        if shrink_factor < 1:
+            raise ValueError("shrink_factor must be at least 1")
+        if not maximum_iterations or any(value < 1 for value in maximum_iterations):
+            raise ValueError("maximum_iterations must contain positive integers")
+
+        output = Path(output_path)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        if backend == "ants":
+            try:
+                import ants
+            except ImportError as exc:
+                raise ImportError(
+                    "ANTs N4 correction requires antspyx"
+                ) from exc
+            image = ants.image_read(str(image_path))
+            mask = ants.image_read(str(mask_path)) if mask_path else None
+            corrected = ants.n4_bias_field_correction(
+                image,
+                mask=mask,
+                shrink_factor=shrink_factor,
+                convergence={"iters": list(maximum_iterations), "tol": 1e-7},
+            )
+            ants.image_write(corrected, str(output))
+            self.logger.info("Applied ANTs N4 bias-field correction to %s", image_path)
+            return str(output)
+
+        try:
+            import SimpleITK as sitk
+        except ImportError as exc:
+            raise ImportError(
+                "N4 bias-field correction requires SimpleITK"
+            ) from exc
+
+        image = sitk.ReadImage(str(image_path), sitk.sitkFloat32)
+        if image.GetDimension() != 3:
+            raise ValueError("N4 bias-field correction requires a 3D image")
+        if mask_path:
+            mask = sitk.Cast(sitk.ReadImage(str(mask_path)), sitk.sitkUInt8)
+            if mask.GetSize() != image.GetSize():
+                raise ValueError("N4 mask and image sizes differ")
+        else:
+            mask = sitk.OtsuThreshold(image, 0, 1, 200)
+
+        if shrink_factor > 1:
+            factors = [shrink_factor] * image.GetDimension()
+            working_image = sitk.Shrink(image, factors)
+            working_mask = sitk.Shrink(mask, factors)
+        else:
+            working_image = image
+            working_mask = mask
+
+        corrector = sitk.N4BiasFieldCorrectionImageFilter()
+        corrector.SetMaximumNumberOfIterations(list(maximum_iterations))
+        corrector.Execute(working_image, working_mask)
+        log_bias_field = corrector.GetLogBiasFieldAsImage(image)
+        corrected = image / sitk.Exp(log_bias_field)
+
+        sitk.WriteImage(corrected, str(output))
+        self.logger.info("Applied N4 bias-field correction to %s", image_path)
+        return str(output)
+
     def crop_image(self,
                    image_path: str,
                    crop_size: Tuple[int, int, int],

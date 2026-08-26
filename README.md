@@ -30,6 +30,28 @@ Data ingestion
   -> Reporting and collaboration
 ```
 
+## Using OmniMedAI in Research Projects
+
+OmniMedAI supplies reusable medical-AI components. Each research project keeps
+its own cohort definitions, endpoints, parameter files, execution scripts, and
+result organization, and imports only the platform modules it requires.
+
+| General analysis stage | OmniMedAI module | Example capability |
+| --- | --- | --- |
+| Image preprocessing | `onem_process` | N4 correction, normalization, resampling, and ROI preparation |
+| Image reconstruction | `onem_process.reconstruction` | Interpolation and pluggable PyTorch super-resolution inference |
+| Segmentation and mask validation | `onem_segment` | Model-based segmentation and validation of externally supplied masks |
+| Radiomic extraction | `onem_radiomics` | Configurable Original, LoG, and Wavelet feature extraction |
+| Reliability and harmonization | `onem_radiomics` | ICC, batch-effect summaries, and ComBat harmonization |
+| Feature selection and modeling | `onem_modeling` | Leakage-controlled selection, patient-level validation, and hyperparameter search |
+| Statistical evaluation | `onem_eval` | Bootstrap confidence intervals, calibration, decision curves, survival, and treatment analyses |
+
+A study can use these modules independently or compose them in the order
+required by its protocol. Generic input examples with non-patient placeholder
+rows are available under [`docs/templates`](./docs/templates/). Reusable
+module-level examples for configuration-driven analyses are provided in
+[`docs/actual_data_workflow.md`](./docs/actual_data_workflow.md).
+
 ## Workflow Diagrams
 
 ![OmniMedAI end-to-end platform workflow](./docs/assets/omnimedai-platform-workflow.png)

@@ -309,7 +309,8 @@ class TITANModel(nn.Module):
     
     def extract_features(self, x: torch.Tensor) -> torch.Tensor:
         """Extract features only."""
-        return self.forward(x, return_features=True)
+        output = self.forward(x, return_features=True)
+        return output[0] if isinstance(output, tuple) else output
     
     def get_feature_dim(self) -> int:
         """Get the dimension of extracted features."""

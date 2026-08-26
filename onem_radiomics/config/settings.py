@@ -28,6 +28,9 @@ class RadiomicsConfig:
         'firstorder', 'glcm', 'glrlm', 'glszm', 'gldm', 'ngtdm'
     ])
 
+    # Optional feature names by class. A None value enables the complete class.
+    feature_names: Dict[str, Optional[List[str]]] = field(default_factory=dict)
+
     # PyRadiomics image filters. Keys are image type names accepted by
     # PyRadiomics and values are optional per-filter settings.
     image_types: Dict[str, Dict[str, Any]] = field(
@@ -68,6 +71,19 @@ class RadiomicsConfig:
             if feature_type not in valid_features:
                 raise ValueError(f"Invalid feature type: {feature_type}. "
                                f"Valid options: {valid_features}")
+        invalid_named_classes = set(self.feature_names).difference(valid_features)
+        if invalid_named_classes:
+            raise ValueError(
+                f"Invalid named feature classes: {sorted(invalid_named_classes)}"
+            )
+        for feature_class, names in self.feature_names.items():
+            if names is not None and (
+                not isinstance(names, (list, tuple))
+                or any(not isinstance(name, str) for name in names)
+            ):
+                raise ValueError(
+                    f"Feature names for {feature_class} must be a list of strings or None"
+                )
 
         valid_image_types = {
             'Original', 'Wavelet', 'LoG', 'Square', 'SquareRoot',
@@ -130,6 +146,7 @@ class RadiomicsConfig:
             'normalize': self.normalize,
             'normalize_scale': self.normalize_scale,
             'feature_types': self.feature_types,
+            'feature_names': self.feature_names,
             'image_types': self.image_types,
             'weight_center': self.weight_center,
             'weight_radius': self.weight_radius,
@@ -141,7 +158,35 @@ class RadiomicsConfig:
     @classmethod
     def from_dict(cls, config_dict: Dict) -> 'RadiomicsConfig':
         """Create configuration from dictionary."""
-        return cls(**config_dict)
+        source = dict(config_dict)
+        if len(source) == 1 and 'MR' in source:
+            source = dict(source['MR'])
+        if not {'imageType', 'featureClass', 'setting'}.intersection(source):
+            return cls(**source)
+
+        settings = dict(source.get('setting', {}))
+        known_settings = {
+            'resampledPixelSpacing': 'resampled_pixel_spacing',
+            'interpolator': 'interpolator',
+            'binWidth': 'bin_width',
+            'normalize': 'normalize',
+            'normalizeScale': 'normalize_scale',
+        }
+        converted = {
+            destination: settings.pop(origin)
+            for origin, destination in known_settings.items()
+            if origin in settings
+        }
+        feature_classes = dict(source.get('featureClass', {}))
+        converted.update(
+            {
+                'image_types': dict(source.get('imageType', {'Original': {}})),
+                'feature_types': list(feature_classes),
+                'feature_names': feature_classes,
+                'custom_settings': settings,
+            }
+        )
+        return cls(**converted)
     
     def save(self, file_path: str):
         """Save configuration to JSON file."""

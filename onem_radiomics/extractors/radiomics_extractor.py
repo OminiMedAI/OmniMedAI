@@ -23,7 +23,7 @@ except ImportError:
     logging.warning("nibabel not available. Install with: pip install nibabel")
 
 try:
-    from radiomics import featureextractor
+    from radiomics import featureextractor, getFeatureClasses
     RADIOMICS_AVAILABLE = True
 except ImportError:
     RADIOMICS_AVAILABLE = False
@@ -98,7 +98,11 @@ class RadiomicsExtractor:
             self.extractor.settings['gldm_a'] = 2
         
         # Enable/disable feature classes
-        setup_radiomics_features(self.extractor, self.config.feature_types)
+        setup_radiomics_features(
+            self.extractor,
+            self.config.feature_types,
+            self.config.feature_names,
+        )
         setup_radiomics_image_types(self.extractor, self.config.image_types)
         
         # Apply custom settings
@@ -144,8 +148,11 @@ class RadiomicsExtractor:
             # Format feature names and convert to appropriate types
             formatted_features = {}
             for key, value in features.items():
-                if isinstance(value, (int, float, np.number)):
-                    formatted_features[format_feature_names(key)] = float(value)
+                if key.startswith("diagnostics_"):
+                    continue
+                scalar = np.asarray(value)
+                if scalar.ndim == 0 and np.issubdtype(scalar.dtype, np.number):
+                    formatted_features[format_feature_names(key)] = float(scalar.item())
             
             # Add metadata
             result = {
@@ -319,16 +326,14 @@ class RadiomicsExtractor:
         
         feature_info = {}
         
-        # Get feature classes and their descriptions
+        feature_classes = getFeatureClasses()
         for feature_class in self.config.feature_types:
-            try:
-                # Get feature names for this class
-                features = self.extractor.getFeatureNames(feature_class)
-                for feature_name in features:
-                    formatted_name = format_feature_names(feature_name)
-                    feature_info[formatted_name] = f"{feature_class}: {feature_name}"
-            except:
+            feature_class_type = feature_classes.get(feature_class)
+            if feature_class_type is None:
                 continue
+            for feature_name in feature_class_type.getFeatureNames():
+                formatted_name = format_feature_names(feature_name)
+                feature_info[formatted_name] = f"{feature_class}: {feature_name}"
         
         return feature_info
     

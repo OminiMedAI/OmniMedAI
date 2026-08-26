@@ -11,11 +11,13 @@ import logging
 import pandas as pd
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
 import json
 import time
+from collections.abc import Mapping
 
 # Try to import required dependencies
 try:
@@ -86,13 +88,21 @@ class TITANExtractor:
         
         if not TITAN_UTILS_AVAILABLE:
             self.logger.warning("TITAN utils not available")
+
+    def _config_value(self, *names, default=None):
+        """Read either mapping-based or object-based configuration values."""
+        if self.config is None:
+            return default
+        for name in names:
+            if isinstance(self.config, Mapping) and name in self.config:
+                return self.config[name]
+            if hasattr(self.config, name):
+                return getattr(self.config, name)
+        return default
     
     def _setup_device(self) -> str:
         """Setup computation device."""
-        if self.config and hasattr(self.config, 'device'):
-            device = self.config.device
-        else:
-            device = 'auto'
+        device = self._config_value('device', default='auto')
         
         if device == 'auto':
             return 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -106,19 +116,21 @@ class TITANExtractor:
         """Initialize TITAN model."""
         try:
             # Get model parameters from config
-            if self.config:
-                backbone_name = getattr(self.config, 'backbone_name', 'resnet50')
-                pretrained = getattr(self.config, 'pretrained', True)
-                feature_dim = getattr(self.config, 'feature_dim', 1024)
-                use_attention = getattr(self.config, 'use_attention', True)
-                checkpoint_path = getattr(self.config, 'checkpoint_path', None)
-            else:
-                # Default parameters
-                backbone_name = 'resnet50'
-                pretrained = True
-                feature_dim = 1024
-                use_attention = True
-                checkpoint_path = None
+            backbone_name = self._config_value(
+                'backbone_name', 'titan_backbone', default='resnet50'
+            )
+            pretrained = self._config_value(
+                'pretrained', 'titan_pretrained', default=True
+            )
+            feature_dim = self._config_value(
+                'feature_dim', 'titan_feature_dim', default=1024
+            )
+            use_attention = self._config_value(
+                'use_attention', 'titan_use_attention', default=True
+            )
+            checkpoint_path = self._config_value(
+                'checkpoint_path', 'titan_checkpoint_path', default=None
+            )
             
             # Create model
             self.model = create_titan_model(
@@ -148,7 +160,7 @@ class TITANExtractor:
         ]
         
         # Add normalization if specified
-        if self.config and getattr(self.config, 'normalize', True):
+        if self._config_value('normalize', default=True):
             # ImageNet normalization
             transform_list.append(
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],

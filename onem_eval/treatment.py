@@ -87,6 +87,7 @@ def estimate_propensity_weights(
     patient_column: str = "patient_id",
     estimand: str = "ate",
     clip: float = 0.01,
+    stabilized: bool = False,
 ):
     """Estimate inverse-probability weights from baseline covariates."""
     try:
@@ -149,14 +150,91 @@ def estimate_propensity_weights(
     )
     model.fit(df[covariates], treatment)
     propensity = np.clip(model.predict_proba(df[covariates])[:, 1], clip, 1 - clip)
+    prevalence = float(treatment.mean())
     if estimand == "ate":
-        weights = treatment / propensity + (1 - treatment) / (1 - propensity)
+        treated_numerator = prevalence if stabilized else 1.0
+        control_numerator = (1.0 - prevalence) if stabilized else 1.0
+        weights = (
+            treatment * treated_numerator / propensity
+            + (1 - treatment) * control_numerator / (1 - propensity)
+        )
     else:
-        weights = treatment + (1 - treatment) * propensity / (1 - propensity)
+        control_factor = prevalence / (1.0 - prevalence) if stabilized else 1.0
+        weights = treatment + (1 - treatment) * control_factor * propensity / (1 - propensity)
     result = df[[patient_column, treatment_column]].copy()
     result["propensity_score"] = propensity
     result["weight"] = weights
-    return {"model": model, "weights": result}
+    return {
+        "model": model,
+        "weights": result,
+        "stabilized": bool(stabilized),
+        "treatment_prevalence": prevalence,
+    }
+
+
+def standardized_mean_differences(
+    data,
+    treatment_column: str,
+    covariates: List[str],
+    weight_column: Optional[str] = None,
+):
+    """Calculate absolute standardized mean differences before or after weighting."""
+    try:
+        import numpy as np
+        import pandas as pd
+    except ImportError as exc:
+        raise ImportError("SMD calculation requires numpy and pandas") from exc
+
+    df = _load_table(data)
+    required = {treatment_column}.union(covariates)
+    if weight_column:
+        required.add(weight_column)
+    missing = sorted(required.difference(df.columns))
+    if missing:
+        raise ValueError(f"Missing SMD columns: {missing}")
+    treatment = df[treatment_column].astype(int)
+    if set(treatment.unique()).difference({0, 1}):
+        raise ValueError("Treatment must be coded as 0/1")
+
+    encoded = pd.get_dummies(df[covariates], columns=[
+        column for column in covariates if not pd.api.types.is_numeric_dtype(df[column])
+    ], drop_first=False, dtype=float)
+    weights = (
+        pd.to_numeric(df[weight_column], errors="raise").to_numpy(dtype=float)
+        if weight_column
+        else np.ones(len(df), dtype=float)
+    )
+    rows = []
+    for column in encoded.columns:
+        values = pd.to_numeric(encoded[column], errors="coerce").to_numpy(dtype=float)
+        valid = np.isfinite(values) & np.isfinite(weights)
+        treated = valid & (treatment.to_numpy() == 1)
+        control = valid & (treatment.to_numpy() == 0)
+        if not treated.any() or not control.any():
+            continue
+
+        def weighted_moments(mask):
+            group_weights = weights[mask]
+            group_values = values[mask]
+            mean = np.average(group_values, weights=group_weights)
+            variance = np.average((group_values - mean) ** 2, weights=group_weights)
+            return float(mean), float(variance)
+
+        treated_mean, treated_variance = weighted_moments(treated)
+        control_mean, control_variance = weighted_moments(control)
+        pooled_sd = np.sqrt((treated_variance + control_variance) / 2.0)
+        smd = 0.0 if pooled_sd == 0 else (treated_mean - control_mean) / pooled_sd
+        rows.append(
+            {
+                "covariate": column,
+                "treated_mean": treated_mean,
+                "control_mean": control_mean,
+                "smd": float(smd),
+                "absolute_smd": float(abs(smd)),
+                "weighted": bool(weight_column),
+            }
+        )
+    return pd.DataFrame(rows).sort_values("absolute_smd", ascending=False).reset_index(drop=True)
 
 
 def waterfall_table(

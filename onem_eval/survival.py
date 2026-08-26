@@ -106,6 +106,7 @@ def fit_cox_model(
     categorical_covariates: Optional[List[str]] = None,
     patient_column: str = "patient_id",
     penalizer: float = 0.0,
+    weights_column: Optional[str] = None,
 ):
     """Fit a multivariable Cox model and return a publication-ready summary."""
     import pandas as pd
@@ -115,7 +116,12 @@ def fit_cox_model(
     missing = sorted(set(covariates).difference(df.columns))
     if missing:
         raise ValueError(f"Missing Cox covariates: {missing}")
-    model_data = df[[duration_column, event_column] + covariates].dropna().copy()
+    model_columns = [duration_column, event_column] + covariates
+    if weights_column:
+        if weights_column not in df.columns:
+            raise ValueError(f"Missing Cox weights column: {weights_column}")
+        model_columns.append(weights_column)
+    model_data = df[model_columns].dropna().copy()
     categorical_covariates = categorical_covariates or []
     invalid_categorical = sorted(set(categorical_covariates).difference(covariates))
     if invalid_categorical:
@@ -133,7 +139,13 @@ def fit_cox_model(
         raise ValueError("Too few complete cases for Cox modeling")
 
     model = CoxPHFitter(penalizer=penalizer)
-    model.fit(model_data, duration_col=duration_column, event_col=event_column)
+    model.fit(
+        model_data,
+        duration_col=duration_column,
+        event_col=event_column,
+        weights_col=weights_column,
+        robust=bool(weights_column),
+    )
     summary = model.summary.reset_index().rename(
         columns={
             "covariate": "term",
@@ -157,8 +169,9 @@ def fit_cox_model(
         "model_columns": [
             column
             for column in model_data.columns
-            if column not in {duration_column, event_column}
+            if column not in {duration_column, event_column, weights_column}
         ],
+        "weights_column": weights_column,
     }
 
 

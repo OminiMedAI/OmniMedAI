@@ -59,6 +59,42 @@ class TestClinicalWorkflowTables(unittest.TestCase):
         self.assertEqual(result.iloc[0]["patient_id"], "p2")
         self.assertEqual(result["plot_order"].tolist(), [1, 2, 3])
 
+    @unittest.skipUnless(PANDAS_AVAILABLE, "pandas unavailable")
+    def test_stabilized_iptw_and_balance_table(self):
+        from onem_eval import (
+            estimate_propensity_weights,
+            standardized_mean_differences,
+        )
+
+        table = pd.DataFrame(
+            {
+                "patient_id": [f"p{index}" for index in range(20)],
+                "treatment": [0, 1] * 10,
+                "age": list(range(50, 70)),
+                "sex": ["F", "M"] * 10,
+            }
+        )
+        propensity = estimate_propensity_weights(
+            table,
+            treatment_column="treatment",
+            covariates=["age", "sex"],
+            stabilized=True,
+        )
+        self.assertTrue(propensity["stabilized"])
+        self.assertTrue((propensity["weights"]["weight"] > 0).all())
+        weighted = table.merge(
+            propensity["weights"][["patient_id", "weight"]],
+            on="patient_id",
+        )
+        balance = standardized_mean_differences(
+            weighted,
+            treatment_column="treatment",
+            covariates=["age", "sex"],
+            weight_column="weight",
+        )
+        self.assertEqual(set(balance["weighted"]), {True})
+        self.assertIn("absolute_smd", balance.columns)
+
 
 if __name__ == "__main__":
     unittest.main()

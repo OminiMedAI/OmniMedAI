@@ -23,6 +23,7 @@ from .survival import (
 from .treatment import (
     estimate_propensity_weights,
     save_waterfall_plot,
+    standardized_mean_differences,
     treatment_interaction_logistic,
     validate_treatment_table,
     waterfall_table,
@@ -40,6 +41,7 @@ __all__ = [
     "compare_binary_models",
     "decision_curve",
     "estimate_propensity_weights",
+    "standardized_mean_differences",
     "evaluate_classification",
     "fit_cox_model",
     "kaplan_meier_table",
