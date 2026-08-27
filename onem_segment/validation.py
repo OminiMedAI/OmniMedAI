@@ -19,6 +19,7 @@ def validate_external_mask(
     mask_path,
     require_binary: bool = True,
     affine_tolerance: float = 1e-4,
+    binary_tolerance: float = 1e-6,
 ):
     """Validate an externally created mask against its source image."""
     import numpy as np
@@ -31,11 +32,14 @@ def validate_external_mask(
     if not np.allclose(image.affine, mask.affine, atol=affine_tolerance):
         issues.append("affine mismatch")
     unique_values = np.unique(mask_data)
-    if require_binary and not set(unique_values).issubset({0, 1}):
+    binary_values = np.isclose(mask_data, 0, atol=binary_tolerance) | np.isclose(
+        mask_data, 1, atol=binary_tolerance
+    )
+    if require_binary and not binary_values.all():
         issues.append(f"mask is not binary: values={unique_values[:10].tolist()}")
     if not np.isfinite(mask_data).all():
         issues.append("mask contains NaN or infinite values")
-    foreground_voxels = int((mask_data > 0).sum())
+    foreground_voxels = int((mask_data > 0.5).sum())
     if foreground_voxels == 0:
         issues.append("mask is empty")
     return {
